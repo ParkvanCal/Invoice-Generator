@@ -1,0 +1,6 @@
+{
+  "name": "Quotation and Invoice Generator",
+  "description": "Generate professionally styled quotations and invoices matching standard spreadsheet architectures with logging capabilities.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,110 @@
+@import "tailwindcss";
+
+/* Force custom autofill behavior to prevent browser overrides from turning background white with white text */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #090d16 inset !important; /* Matches bg-slate-950 */
+  -webkit-text-fill-color: #ffffff !important; /* White text */
+  transition: background-color 50000s ease-in-out 0s;
+}
+
+/* Option tags inside selects often default to system browser styles (white bg, white text is a known issue) */
+option {
+  background-color: #0f172a !important; /* bg-slate-900 */
+  color: #ffffff !important; /* white text */
+}
+
+/* Robust fallback for inputs inside dark mode containers - force dark scheme, dark backgrounds, and white text directly in raw CSS */
+input[type="text"],
+input[type="number"],
+input[type="date"],
+input, 
+select, 
+textarea {
+  color-scheme: dark !important; 
+  background-color: #020617 !important; /* Force transparent or dark slate bg */
+  color: #ffffff !important;             /* Force white text */
+  border-color: #1e293b !important;      /* Slate border */
+}
+
+/* Exempt transparent elements from background forced color if needed */
+.bg-transparent {
+  background-color: transparent !important;
+}
+
+/* Perfect print layout stylesheets. Isolates the Excel sheet template entirely onto clean pages. */
+@media print {
+  html, body {
+    background-color: #ffffff !important;
+    color: #1e293b !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide entire page workspace panels: header tabs, creator form sidebar, WYSIWYG control subbar */
+  header,
+  #hdr-main,
+  section:first-of-type,
+  nav,
+  .print\:hidden,
+  button,
+  select,
+  div.absolute.top-2.left-2,
+  div.flex.border-b.border-dashed.border-slate-200 {
+    display: none !important;
+  }
+
+  /* Override the bento-gird layout structure for single columns */
+  main {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  section.lg\:col-span-7 {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Eliminate deep dark grid containers & frames */
+  .bg-slate-900 {
+    background: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Target the Excel sheet white card container */
+  .bg-white {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  div[style*="minHeight"] {
+    min-height: auto !important;
+    padding: 10px !important;
+    margin: 0 !important;
+  }
+
+  .text-red-print {
+    color: #dc2626 !important;
+  }
+}
+
+
