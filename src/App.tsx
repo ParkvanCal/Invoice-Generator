@@ -25,9 +25,9 @@ import { motion, AnimatePresence } from "motion/react";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import { JobBookEntry, DocumentDetails, LineItem, DocumentState } from "./types";
+import companyLogo from "./assets/images/company_logo_1780762745301.png";
 
 export default function App() {
-  const companyLogo = "/src/assets/images/company_logo_1780762745301.png";
 
   // Navigation & View Tab
   const [activeTab, setActiveTab] = useState<'quote' | 'invoice' | 'job_book' | 'design_docs'>('quote');
@@ -190,7 +190,11 @@ export default function App() {
     return localStorage.getItem("excel_app_companyPhone") || "0778 924 209";
   });
   const [brCompanyLogo, setBrCompanyLogo] = useState(() => {
-    return localStorage.getItem("excel_app_companyLogo") || companyLogo;
+    const saved = localStorage.getItem("excel_app_companyLogo");
+    if (saved && (saved.startsWith("/src/assets/") || saved.includes("company_logo_1780762745301.png"))) {
+      return companyLogo; // Upgrade cached absolute development path to the relative bundled path
+    }
+    return saved || companyLogo;
   });
   const [brShowLogo, setBrShowLogo] = useState(() => {
     const saved = localStorage.getItem("excel_app_showLogo");
