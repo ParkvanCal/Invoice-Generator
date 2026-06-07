@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Quotation & Invoice Manager (Python Local Engine)</title>
+    <!-- Tailwind CSS (via CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* Print Styles - renders the high-fidelity invoice wrapper exactly to scale, hiding UI elements */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printArea, #printArea * {
+                visibility: visible;
+            }
+            #printArea {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+        
+        /* Smooth transitions */
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
+
+    <!-- Header Navigation Bar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Branding -->
+                <div class="flex items-center space-x-3">
+                    <div class="p-2 bg-indigo-600 text-white rounded-lg">
+                        <i data-lucide="file-text" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold text-slate-900 tracking-tight" id="top-branding-title">Python Invoice Engine</h1>
+                        <p class="text-xs text-slate-500 font-mono">SQLite Local DB Connected</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="flex space-x-1 bg-slate-100 p-1 rounded-xl">
+                    <button onclick="switchTab('quote-tab', 'quote')" id="btn-quote" class="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 bg-white text-slate-900 shadow-sm flex items-center space-x-1.5">
+                        <i data-lucide="layers" class="w-4 h-4"></i>
+                        <span>Quotation Builder</span>
+                    </button>
+                    <button onclick="switchTab('invoice-tab', 'invoice')" id="btn-invoice" class="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 text-slate-600 hover:text-slate-900 flex items-center space-x-1.5">
+                        <i data-lucide="printer" class="w-4 h-4"></i>
+                        <span>Invoice Finalizer</span>
+                    </button>
+                    <button onclick="switchTab('jobbook-tab', 'jobbook')" id="btn-jobbook" class="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 text-slate-600 hover:text-slate-900 flex items-center space-x-1.5">
+                        <i data-lucide="database" class="w-4 h-4"></i>
+                        <span>Job Book DB</span>
+                    </button>
+                    <button onclick="switchTab('settings-tab', 'settings')" id="btn-settings" class="px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 text-slate-600 hover:text-slate-900 flex items-center space-x-1.5">
+                        <i data-lucide="briefcase" class="w-4 h-4"></i>
+                        <span>Organization Profile</span>
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- App Banner -->
+    <div class="bg-indigo-600 text-white py-3 px-4 no-print shadow-sm text-center text-xs sm:text-sm font-medium animate-pulse">
+        💻 Running locally via Python SQLite & Flask! Your invoices are permanently saved in <span class="font-mono bg-indigo-700 px-1.5 py-0.5 rounded text-indigo-200">invoices.db</span>.
+    </div>
+
+    <!-- Main Workspace Framework -->
+    <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:flex-row gap-8">
+        
+        <!-- Interactive Control Form Sidebar -->
+        <section class="w-full lg:w-[480px] shrink-0 no-print space-y-6">
+            
+            <!-- Tab 1: Quotation Creator Form -->
+            <div id="quote-tab" class="tab-content active bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center space-x-2">
+                        <i data-lucide="layers" class="text-indigo-600 w-5 h-5"></i>
+                        <span>Generate Quotation</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-1">Populate client coordinates and line items to update the spreadsheet preview.</p>
+                </div>
+
+                <!-- Client Fields -->
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2">
+                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Client Business Name</label>
+                            <input type="text" id="qt-clientName" oninput="updateQuoteState()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" value="MASIMBA HOLDINGS LIMITED">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Company Physical Address</label>
+                            <input type="text" id="qt-addr" oninput="updateQuoteState()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" value="44 Tilbury Road, Willowvale">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">City/Territory</label>
+                            <input type="text" id="qt-city" oninput="updateQuoteState()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" value="Harare">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Contact Person</label>
+                            <input type="text" id="qt-contact" oninput="updateQuoteState()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" value="Natasha">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Our Representative</label>
+                            <input type="text" id="qt-repName" oninput="updateQuoteState()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" value="Upenyu">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Quotation Date</label>
+                            <input type="date" id="qt-date" oninput="updateQuoteState()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" value="2026-04-29">
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="border-slate-100">
+
+                <!-- Line Item Addition Form -->
+                <div class="space-y-4">
+                    <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-1.5">
+                        <i data-lucide="plus" class="w-4 h-4 text-indigo-600"></i>
+                        <span>Add Quotation Line Item</span>
+                    </h3>
+                    
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Item Description / Calibration Scope</label>
+                            <textarea id="item-desc" rows="2" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g., Tank Calibration Of 28000 Liter HMT 003"></textarea>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Quantity (Qty)</label>
+                                <input type="number" id="item-qty" min="0.1" step="any" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" value="1">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Unit Price ($)</label>
+                                <input type="number" id="item-price" min="0" step="any" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" value="0">
+                            </div>
+                        </div>
+                        <button onclick="addLineItem()" class="w-full bg-slate-900 text-white rounded-lg py-2 text-sm font-semibold hover:bg-slate-800 transition flex items-center justify-center space-x-1.5 shadow-sm">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            <span>Insert Line Item</span>
+                        </button>
+                    </div>
+                </div>
+
+                <hr class="border-slate-100">
+
+                <!-- Actions -->
+                <div class="flex items-center space-x-3 pt-2">
+                    <button onclick="saveQuotation()" class="flex-grow bg-indigo-600 text-white rounded-xl py-3 text-sm font-bold hover:bg-indigo-700 transition flex items-center justify-center space-x-2 shadow-lg shadow-indigo-100">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        <span>Save & Print Quote</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab 2: Invoice Finalizer Form -->
+            <div id="invoice-tab" class="tab-content bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center space-x-2">
+                        <i data-lucide="printer" class="text-indigo-600 w-5 h-5"></i>
+                        <span>Compile Invoice</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-1">Convert a finalized Quotation stored on SQLite into an Tax Invoice with metadata.</p>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Select Base Quote ID</label>
+                        <select id="inv-quoteId" onchange="loadSelectedQuoteIntoInvoice()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Customer Purchase Order #</label>
+                        <input type="text" id="inv-orderNum" oninput="updateInvoiceState()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" value="Verbal">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Invoice Date</label>
+                        <input type="date" id="inv-date" oninput="updateInvoiceState()" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" value="2026-04-29">
+                    </div>
+                </div>
+
+                <hr class="border-slate-100">
+
+                <div class="pt-2">
+                    <button onclick="finalizeInvoice()" class="w-full bg-emerald-600 text-white rounded-xl py-3 text-sm font-bold hover:bg-emerald-700 transition flex items-center justify-center space-x-2 shadow-lg shadow-emerald-100">
+                        <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                        <span>Finalize & Print Invoice</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab 3: Job Book Database view and actions -->
+            <div id="jobbook-tab" class="tab-content bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center space-x-2">
+                        <i data-lucide="database" class="text-indigo-600 w-5 h-5"></i>
+                        <span>Ledger Search & Filters</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-1">Query, review, and delete invoice logs recorded inside SQLite main file logger.</p>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Search Clients or Jobs</label>
+                        <div class="relative">
+                            <input type="text" id="search-query" oninput="fetchJobBook()" class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Type client name...">
+                            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
+                        </div>
+                    </div>
+                    
+                    <button onclick="clearDatabaseLogsPrompt()" class="w-full bg-rose-50 text-rose-600 border border-rose-100 rounded-xl py-2.5 text-xs font-semibold hover:bg-rose-100 transition flex items-center justify-center space-x-1.5">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        <span>Clear All SQLite Logs</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab 4: Corporate Profile & Settings -->
+            <div id="settings-tab" class="tab-content bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900 flex items-center space-x-2">
+                        <i data-lucide="briefcase" class="text-indigo-600 w-5 h-5"></i>
+                        <span>Branding Configuration</span>
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-1">Modify letterhead metadata stored inside settings table to customize printed outputs.</p>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Organization Name</label>
+                        <input type="text" id="bm-companyName" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm" value="">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Slogan / Tagline</label>
+                        <input type="text" id="bm-companyTagline" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm" value="">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Business Address</label>
+                        <input type="text" id="bm-companyAddress" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm" value="">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Contact Email</label>
+                        <input type="text" id="bm-companyEmail" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm" value="">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Contact Phone</label>
+                        <input type="text" id="bm-companyPhone" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm" value="">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Design Style Layout</label>
+                        <select id="bm-styleMode" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm">
+                            <option value="clean">Minimalist Modern (Letterhead)</option>
+                            <option value="excel">Classic accounting grid</option>
+                        </select>
+                    </div>
+
+                    <!-- Logo Upload (Base 64 Conversion) -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Upload New Logo (Image)</label>
+                        <div class="border-2 border-dashed border-slate-200 hover:border-indigo-500 rounded-xl p-4 text-center cursor-pointer relative bg-slate-50 transition">
+                            <input type="file" id="logo-file" accept="image/*" onchange="encodeLogoAsBase64(event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                            <i data-lucide="upload" class="w-6 h-6 text-slate-400 mx-auto mb-1"></i>
+                            <p class="text-xs text-slate-500 font-medium">Click to select image file (PNG / JPG)</p>
+                        </div>
+                    </div>
+                    
+                    <button onclick="saveSettigsToServer()" class="w-full bg-slate-900 text-white rounded-lg py-2.5 text-sm font-semibold hover:bg-slate-800 transition">
+                        Save System Settings
+                    </button>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Right Side: Standard WYSIWYG Document Layout Frame & Job Book Database Output Grid -->
+        <section class="flex-grow space-y-6">
+            
+            <!-- Contextual Screen Wrapper for Job Book View -->
+            <div id="jobbook-viewport" class="tab-content bg-white border border-slate-200 rounded-2xl shadow-sm p-6 space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900">SQLite Logged Entries (Job Book)</h2>
+                        <p class="text-xs text-slate-500">Live database rows logged to the main accounting worksheets database.</p>
+                    </div>
+                    <button onclick="fetchJobBook()" class="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition" title="Refresh Table">
+                        <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                
+                <div class="overflow-x-auto border-t border-slate-100">
+                    <table class="w-full text-left font-mono text-xs text-slate-600 divide-y divide-slate-100">
+                        <thead class="bg-slate-50 text-slate-500 font-sans">
+                            <tr>
+                                <th class="p-3 font-semibold">Job ID</th>
+                                <th class="p-3 font-semibold">Client</th>
+                                <th class="p-3 font-semibold">Description</th>
+                                <th class="p-3 font-semibold text-right">Qty</th>
+                                <th class="p-3 font-semibold text-right">Unit Price</th>
+                                <th class="p-3 font-semibold text-right">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="jobbook-table-rows" class="divide-y divide-slate-100">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- WYSIWYG Document Layout Board (for Quotes and Invoices) -->
+            <div id="document-preview-wrapper" class="tab-content active space-y-4">
+                <div class="flex items-center justify-between no-print px-1">
+                    <div>
+                        <h3 class="text-sm font-semibold text-slate-900" id="preview-mode-heading">Live Document View (QUOTE)</h3>
+                        <p class="text-xs text-slate-500">Exact high-fidelity scaling representing the final letterhead PDF.</p>
+                    </div>
+                    <button onclick="triggerPrintDialog()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition shadow-sm">
+                        <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                        <span>Print to PDF</span>
+                    </button>
+                </div>
+
+                <!-- Printable document model (perfect paper grid) -->
+                <div id="printArea" class="bg-white border border-slate-200 rounded-2xl shadow-xl max-w-[210mm] min-h-[297mm] mx-auto p-8 sm:p-12 md:p-14 flex flex-col justify-between">
+                    
+                    <!-- Paper Top Section -->
+                    <div class="space-y-6">
+                        
+                        <!-- Core Company Header Branding Letterhead style -->
+                        <div class="flex flex-col sm:flex-row justify-between items-start gap-4 border-b pb-6" id="comp-letterhead-border">
+                            <div class="flex items-center space-x-3">
+                                <!-- Base Logo Graphic -->
+                                <div id="comp-logo-container" class="w-14 h-14 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-center shrink-0">
+                                    <i data-lucide="file-text" id="fallback-logo-icon" class="w-8 h-8 text-indigo-600"></i>
+                                    <img id="real-logo-img" class="w-full h-full object-contain hidden" referrerPolicy="no-referrer" alt="Logo">
+                                </div>
+                                <div>
+                                    <h2 id="prev-company-name" class="font-bold text-lg text-slate-900 leading-tight">Parkvan Calibration (Pvt) Ltd</h2>
+                                    <p id="prev-company-tagline" class="text-slate-400 font-semibold text-[10px] tracking-widest uppercase">PRECISION. RELIABILITY. COMPLIANCE.</p>
+                                    <p id="prev-company-details" class="text-[10px] text-slate-500 font-mono mt-1">
+                                        Cell: 0778 924 209 | Email: info@parkvan-calibration.co.zw
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="text-right sm:text-right text-xs">
+                                <h1 class="text-xl font-bold tracking-tight uppercase" id="doc-type-badge">Quotation</h1>
+                                <p class="text-[10px] font-mono mt-1 text-slate-500">
+                                    Document ID: <span class="font-semibold text-slate-800" id="doc-job-id">01MAS26</span>
+                                </p>
+                                <p class="text-[10px] font-mono mt-0.5 text-slate-500">
+                                    Date Issued: <span class="text-slate-800" id="doc-date-issued">2026-04-29</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Client and Reference meta blocks -->
+                        <div class="grid grid-cols-2 gap-8 text-[11px] leading-relaxed">
+                            <div>
+                                <h4 class="font-bold text-slate-800 uppercase tracking-wider mb-1 pb-0.5 border-b text-[10px]">Client Coordinates / Invoice Destination</h4>
+                                <p id="doc-client-name" class="font-bold text-slate-900 text-xs">MASIMBA HOLDINGS LIMITED</p>
+                                <p id="doc-client-address" class="text-slate-600 mt-1">44 Tilbury Road, Willowvale</p>
+                                <p id="doc-client-city" class="text-slate-600">Harare</p>
+                                <p id="doc-client-contact" class="text-slate-500 mt-0.5 font-mono">Attn: Natasha</p>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-800 uppercase tracking-wider mb-1 pb-0.5 border-b text-[10px]">Authorization & Tracking</h4>
+                                <p class="text-slate-600 mt-0.5">Physical Address: <span id="prev-company-physical" class="text-slate-800 font-medium">119 Harare Drive, Hatfield</span></p>
+                                <p class="text-slate-600 mt-0.5" id="lbl-ordernum-container">Customer PO #: <span id="doc-order-num" class="text-slate-800 font-medium font-mono">Verbal</span></p>
+                                <p class="text-slate-600 mt-0.5">Authorizing Engineer: <span id="doc-engineer" class="text-slate-800 font-medium">Upenyu</span></p>
+                                <p class="text-slate-600 mt-0.5 font-mono text-[10px] text-indigo-600">Log Reference: ISO 17025 accredited standards</p>
+                            </div>
+                        </div>
+
+                        <!-- Floating accounting items ledger (Clean responsive paper table) -->
+                        <div class="border border-slate-200 rounded-xl overflow-hidden mt-4">
+                            <table class="w-full text-left border-collapse text-[11px]" id="invoice-sheet-table">
+                                <thead class="bg-indigo-600 text-white font-semibold">
+                                    <tr>
+                                        <th class="p-2 border-r border-indigo-500 text-center w-12">Qty</th>
+                                        <th class="p-2 border-r border-indigo-500">Calibration Scope Description</th>
+                                        <th class="p-2 border-r border-indigo-500 text-right w-24">Unit Price</th>
+                                        <th class="p-2 text-right w-24">Total Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="prev-item-rows" class="divide-y divide-slate-100">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+
+                    <!-- Paper Bottom Section -->
+                    <div class="mt-8 pt-6 border-t border-slate-100 space-y-6">
+                        
+                        <!-- Floating feedback and standard disclaimer block -->
+                        <div class="text-[10px] text-slate-500 space-y-2 max-w-xl">
+                            <h4 class="font-bold text-slate-700 uppercase tracking-wide">Notice & Compliance Notes</h4>
+                            <ul class="list-disc pl-4 space-y-0.5">
+                                <li id="dynamic-client-disclaimer">Kindly permit us to use your logo and completed works for advertising and social media promotional purposes.</li>
+                                <li>Payment Terms: strictly COD or as authorized under credit agreements. Standards applied follow international laboratory metrology norms.</li>
+                            </ul>
+                        </div>
+
+                        <!-- Formal Footer signoff and corporate address stamps -->
+                        <div class="flex justify-between items-end border-t border-slate-100 pt-6 text-[9px] text-slate-400 font-mono">
+                            <div>
+                                <p class="uppercase font-semibold text-slate-700 font-sans">Authorized Certification Stamp</p>
+                                <p class="mt-1">Verified with digital traceability matrix</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-semibold text-slate-600" id="printed-footer-company">Parkvan Calibration (Pvt) Ltd</p>
+                                <p class="mt-0.5">Generated using Python Local Database Engine</p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- UI State Controller Scripts -->
+    <script>
+        // Global client states
+        let globalSettings = {};
+        let jobBookLogs = [];
+        let finalizedQuotes = [];
+        let activeTab = 'quote'; // quote, invoice, jobbook, settings
+        
+        // Active quote builder lines
+        let activeQuoteLines = [
+            { id: "1", qty: 1, desc: "Calibration of 5000 Liter Bowser MFB 005", unitPrice: 150.00, total: 150.00 },
+            { id: "2", qty: 1, desc: "Calibration of flow meter MFB 00575", unitPrice: 75.00, total: 75.00 },
+            { id: "3", qty: 1, desc: "Tank Calibration Of 28000 Liter HMT 003", unitPrice: 350.00, total: 350.00 },
+            { id: "4", qty: 1, desc: "Tank Integrity Test on 28000L (6 Compartment) HMT 003", unitPrice: 300.00, total: 300.00 },
+            { id: "5", qty: 1, desc: "Tank cleaning on 28000L (6 Compartment) HMT 003", unitPrice: 350.00, total: 350.00 },
+            { id: "6", qty: 1, desc: "Supply Commercial Dispenser (Sanki Classic SK52-120LPM)", unitPrice: 9500.00, total: 9500.00 },
+            { id: "7", qty: 1, desc: "1 Installation and Calibration Commercial Pump Dispenser", unitPrice: 150.00, total: 150.00 },
+            { id: "8", qty: 1, desc: "Mileage", unitPrice: 50.00, total: 50.00 }
+        ];
+
+        // Active WYSIWYG document state
+        let liveDocument = {
+            type: 'QUOTE',
+            details: {
+                jobID: "01MAS26",
+                clientName: "MASIMBA HOLDINGS LIMITED",
+                addr: "44 Tilbury Road, Willowvale",
+                city: "Harare",
+                contact: "Natasha",
+                repName: "Upenyu",
+                date: "2026-04-29"
+            },
+            items: [...activeQuoteLines]
+        };
+
+        // Initialize and reload details
+        window.addEventListener('DOMContentLoaded', async () => {
+            lucide.createIcons();
+            
+            // 1. Fetch system global settings
+            await fetchSettings();
+            
+            // 2. Fetch completed jobbook logs
+            await fetchJobBook();
+            
+            // 3. Fetch list of saved quotes
+            await fetchQuotes();
+            
+            // Render initial state
+            updateQuoteState();
+        });
+
+        // Tab Switching Mechanism
+        function switchTab(tabId, viewName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(el => {
+                el.classList.remove('bg-white', 'text-slate-900', 'shadow-sm');
+                el.classList.add('text-slate-600');
+            });
+            
+            // Show requested tab
+            document.getElementById(tabId).classList.add('active');
+            
+            // Update nav button styled
+            const clickedBtn = document.getElementById(`btn-${viewName}`);
+            if (clickedBtn) {
+                clickedBtn.classList.remove('text-slate-600');
+                clickedBtn.classList.add('bg-white', 'text-slate-900', 'shadow-sm');
+            }
+            
+            // Contextual settings for viewport panels
+            if (viewName === 'jobbook') {
+                document.getElementById('jobbook-viewport').classList.add('active');
+                document.getElementById('document-preview-wrapper').classList.remove('active');
+            } else {
+                document.getElementById('jobbook-viewport').classList.remove('active');
+                document.getElementById('document-preview-wrapper').classList.add('active');
+            }
+            
+            activeTab = viewName;
+            
+            if (viewName === 'quote') {
+                liveDocument.type = 'QUOTE';
+                updateQuoteState();
+            } else if (viewName === 'invoice') {
+                liveDocument.type = 'INVOICE';
+                updateInvoiceState();
+            }
+        }
+
+        // Fetch System Settings from Python Endpoint
+        async function fetchSettings() {
+            try {
+                const response = await fetch('/api/settings');
+                const data = await response.json();
+                globalSettings = data;
+                
+                // Populate Profile fields in Settings Tab
+                document.getElementById('bm-companyName').value = data.company_name;
+                document.getElementById('bm-companyTagline').value = data.company_tagline;
+                document.getElementById('bm-companyAddress').value = data.company_address;
+                document.getElementById('bm-companyEmail').value = data.company_email;
+                document.getElementById('bm-companyPhone').value = data.company_phone;
+                document.getElementById('bm-styleMode').value = data.style_mode;
+                
+                // Update workspace rendering metrics
+                document.getElementById('top-branding-title').innerText = data.company_name;
+                document.getElementById('prev-[#prev-company-name]') && (document.getElementById('prev-company-name').innerText = data.company_name);
+                document.getElementById('printed-footer-company').innerText = data.company_name;
+                
+                applySettingsMarkup(data);
+            } catch (err) {
+                console.error("Error loading settings:", err);
+            }
+        }
+
+        // Apply HTML modifications matching chosen style mode
+        function applySettingsMarkup(settings) {
+            document.getElementById('prev-company-name').innerText = settings.company_name;
+            document.getElementById('prev-company-tagline').innerText = settings.company_tagline;
+            document.getElementById('prev-company-details').innerText = `Cell: ${settings.company_phone} | Email: ${settings.company_email}`;
+            document.getElementById('prev-company-physical').innerText = settings.company_address;
+            
+            const logoContainer = document.getElementById('comp-logo-container');
+            const fallbackIcon = document.getElementById('fallback-logo-icon');
+            const realImg = document.getElementById('real-logo-img');
+            
+            if (settings.show_logo && settings.logo_base64) {
+                fallbackIcon.classList.add('hidden');
+                realImg.src = settings.logo_base64;
+                realImg.classList.remove('hidden');
+                logoContainer.classList.remove('bg-indigo-50', 'border-indigo-100');
+            } else {
+                fallbackIcon.classList.remove('hidden');
+                realImg.classList.add('hidden');
+                logoContainer.classList.add('bg-indigo-50', 'border-indigo-100');
+            }
+            
+            const colHeader = document.querySelector('#invoice-sheet-table thead');
+            if (settings.style_mode === 'excel') {
+                colHeader.classList.remove('bg-indigo-600');
+                colHeader.classList.add('bg-slate-700');
+            } else {
+                colHeader.classList.remove('bg-slate-700');
+                colHeader.classList.add('bg-indigo-600');
+            }
+        }
+
+        // Save Settings Form to Backend
+        async function saveSettigsToServer() {
+            const data = {
+                company_name: document.getElementById('bm-companyName').value,
+                company_tagline: document.getElementById('bm-companyTagline').value,
+                company_address: document.getElementById('bm-companyAddress').value,
+                company_email: document.getElementById('bm-companyEmail').value,
+                company_phone: document.getElementById('bm-companyPhone').value,
+                style_mode: document.getElementById('bm-styleMode').value,
+                show_logo: true,
+                logo_base64: document.getElementById('real-logo-img').src.startsWith('data:image') ? document.getElementById('real-logo-img').src : globalSettings.logo_base64
+            };
+            
+            try {
+                const res = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const updated = await res.json();
+                globalSettings = updated;
+                applySettingsMarkup(updated);
+                alert("Branding Settings successfully persisted to SQLite database!");
+            } catch (err) {
+                console.error("Error saving settings:", err);
+                alert("Failed to save settings: " + err.message);
+            }
+        }
+
+        // Base 64 Converter for Logo File Uploads
+        function encodeLogoAsBase64(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Str = e.target.result;
+                document.getElementById('real-logo-img').src = base64Str;
+                document.getElementById('real-logo-img').classList.remove('hidden');
+                document.getElementById('fallback-logo-icon').classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Fetch registered logs inside SQL Job Book
+        async function fetchJobBook() {
+            try {
+                const response = await fetch('/api/job-book');
+                const data = await response.json();
+                jobBookLogs = data;
+                renderJobBookTable();
+            } catch (err) {
+                console.error("Error loading job-book ledger:", err);
+            }
+        }
+
+        // Render rows in tabular spreadsheet format
+        function renderJobBookTable() {
+            const rowsContainer = document.getElementById('jobbook-table-rows');
+            const searchVal = document.getElementById('search-query').value.toLowerCase();
+            rowsContainer.innerHTML = '';
+            
+            const filtered = jobBookLogs.filter(row => 
+                row.client_name.toLowerCase().includes(searchVal) || 
+                row.job_id.toLowerCase().includes(searchVal) ||
+                row.desc.toLowerCase().includes(searchVal)
+            );
+            
+            if (filtered.length === 0) {
+                rowsContainer.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 font-sans italic">No matching results found in ledger</td></tr>`;
+                return;
+            }
+            
+            filtered.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+                tr.innerHTML = `
+                    <td class="p-3 font-semibold text-indigo-600">${row.job_id}</td>
+                    <td class="p-3 font-sans font-medium text-slate-800">${row.client_name}</td>
+                    <td class="p-3 font-sans">${row.desc}</td>
+                    <td class="p-3 text-right">${row.qty}</td>
+                    <td class="p-3 text-right">$${row.unit_price.toFixed(2)}</td>
+                    <td class="p-3 text-right font-semibold text-slate-900">$${row.total.toFixed(2)}</td>
+                `;
+                rowsContainer.appendChild(tr);
+            });
+        }
+
+        // Fetch finalized Quotes
+        async function fetchQuotes() {
+            try {
+                const response = await fetch('/api/quotes');
+                const data = await response.json();
+                finalizedQuotes = data;
+                
+                // Populate Invoice Base Dropdown
+                const dropdown = document.getElementById('inv-quoteId');
+                dropdown.innerHTML = '';
+                
+                if (data.length === 0) {
+                    dropdown.innerHTML = '<option value="">No finalized quotes saved yet</option>';
+                    return;
+                }
+                
+                data.forEach(q => {
+                    const option = document.createElement('option');
+                    option.value = q.id;
+                    option.text = `${q.id} - ${q.details.clientName} ($${q.subtotal.toFixed(2)})`;
+                    dropdown.appendChild(option);
+                });
+            } catch (err) {
+                console.error("Error fetching saving-quotes:", err);
+            }
+        }
+
+        // VBA job counting key generator helper
+        function generateVbaJobID(clientName) {
+            const clean = clientName.replace(/\s+/g, '').toUpperCase();
+            const clientCode = clean.length >= 3 ? clean.substring(0, 3) : clean.padEnd(3, 'X');
+            
+            const existingCount = finalizedQuotes.filter(q => q.details.clientName.toLowerCase() === clientName.toLowerCase()).length;
+            const countStr = String(existingCount + 1).padStart(2, '0');
+            return `${countStr}${clientCode}26`;
+        }
+
+        // Active Quotation builder line elements manager
+        function addLineItem() {
+            const desc = document.getElementById('item-desc').value;
+            const qty = parseFloat(document.getElementById('item-qty').value) || 1;
+            const price = parseFloat(document.getElementById('item-price').value) || 0;
+            
+            if (!desc.trim()) {
+                alert("Please write an item description before inserting");
+                return;
+            }
+            
+            const newLine = {
+                id: Date.now().toString(),
+                qty: qty,
+                desc: desc,
+                unitPrice: price,
+                total: qty * price
+            };
+            
+            activeQuoteLines.push(newLine);
+            
+            // Reset input values
+            document.getElementById('item-desc').value = '';
+            document.getElementById('item-qty').value = '1';
+            document.getElementById('item-price').value = '0';
+            
+            updateQuoteState();
+        }
+
+        function removeLineItem(id) {
+            activeQuoteLines = activeQuoteLines.filter(line => line.id !== id);
+            updateQuoteState();
+        }
+
+        // Synchronize elements to Sheet Render for Quotation View
+        function updateQuoteState() {
+            const clientName = document.getElementById('qt-clientName').value;
+            const targetID = generateVbaJobID(clientName);
+            
+            liveDocument = {
+                type: 'QUOTE',
+                details: {
+                    jobID: targetID,
+                    clientName: clientName,
+                    addr: document.getElementById('qt-addr').value,
+                    city: document.getElementById('qt-city').value,
+                    contact: document.getElementById('qt-contact').value,
+                    repName: document.getElementById('qt-repName').value,
+                    date: document.getElementById('qt-date').value
+                },
+                items: [...activeQuoteLines]
+            };
+            
+            renderSheetPreview();
+        }
+
+        // Synchronize elements to Sheet Render for Invoice View
+        function updateInvoiceState() {
+            const selectedID = document.getElementById('inv-quoteId').value;
+            if (!selectedID) return;
+            
+            const parentQuote = finalizedQuotes.find(q => q.id === selectedID);
+            if (!parentQuote) return;
+            
+            liveDocument = {
+                type: 'INVOICE',
+                details: {
+                    ...parentQuote.details,
+                    orderNum: document.getElementById('inv-orderNum').value,
+                    date: document.getElementById('inv-date').value
+                },
+                items: [...parentQuote.items]
+            };
+            
+            renderSheetPreview();
+        }
+
+        // Auto-Load Quote fields into Invoice View on dropdown adjustment
+        function loadSelectedQuoteIntoInvoice() {
+            updateInvoiceState();
+        }
+
+        // Render HTML Sheet Component dynamically
+        function renderSheetPreview() {
+            document.getElementById('preview-mode-heading').innerText = `Live Document View (${liveDocument.type})`;
+            document.getElementById('doc-type-badge').innerText = liveDocument.type === 'QUOTE' ? 'Quotation' : 'Tax Invoice';
+            document.getElementById('doc-job-id').innerText = liveDocument.details.jobID;
+            document.getElementById('doc-date-issued').innerText = liveDocument.details.date;
+            
+            // Coordinates
+            document.getElementById('doc-client-name').innerText = liveDocument.details.clientName;
+            document.getElementById('doc-client-address').innerText = liveDocument.details.addr;
+            document.getElementById('doc-client-city').innerText = liveDocument.details.city;
+            document.getElementById('doc-client-contact').innerText = `Attn: ${liveDocument.details.contact}`;
+            document.getElementById('doc-engineer').innerText = liveDocument.details.repName;
+            
+            // Notice Order container
+            const pOrderContainer = document.getElementById('lbl-ordernum-container');
+            if (liveDocument.type === 'INVOICE') {
+                pOrderContainer.classList.remove('hidden');
+                document.getElementById('doc-order-num').innerText = liveDocument.details.orderNum || 'N/A';
+            } else {
+                pOrderContainer.classList.add('hidden');
+            }
+            
+            // Items Rendering
+            const body = document.getElementById('prev-item-rows');
+            body.innerHTML = '';
+            
+            let currentSubtotal = 0;
+            
+            liveDocument.items.forEach((item, index) => {
+                currentSubtotal += item.total;
+                
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-100 hover:bg-slate-50 transition";
+                
+                // Add conditional visual controls for inputs only in Builder Tab
+                const deleteActionBtn = (liveDocument.type === 'QUOTE' && activeTab === 'quote')
+                    ? `<button onclick="removeLineItem('${item.id}')" class="text-rose-500 hover:text-rose-700 ml-2 no-print float-right"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>`
+                    : '';
+                
+                tr.innerHTML = `
+                    <td class="p-2 border-r border-slate-100 font-mono text-center text-slate-800">${item.qty}</td>
+                    <td class="p-2 border-r border-slate-100 text-slate-950 font-medium">
+                        ${item.desc}
+                        ${deleteActionBtn}
+                    </td>
+                    <td class="p-2 border-r border-slate-100 font-mono text-right text-slate-600">$${item.unitPrice.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                    <td class="p-2 font-mono text-right font-semibold text-slate-900">$${item.total.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                `;
+                body.appendChild(tr);
+            });
+            
+            // Subtotal Line
+            const trSub = document.createElement('tr');
+            trSub.className = "bg-slate-50 border-t-2 border-slate-200 font-bold";
+            trSub.innerHTML = `
+                <td colspan="2" class="p-2 text-right text-slate-500 font-sans tracking-tight">SUBTOTAL SHEET RANGE SUM</td>
+                <td class="p-2 border-r border-slate-100"></td>
+                <td class="p-2 font-mono text-right text-slate-950">$${currentSubtotal.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+            `;
+            body.appendChild(trSub);
+            
+            // Double counting mathematical check layout matching Excel J15:J29 / 2
+            const mockDouble = currentSubtotal * 2;
+            const formulaGrandTotal = mockDouble / 2;
+            
+            const trGrand = document.createElement('tr');
+            trGrand.className = "bg-indigo-50 border-t-2 border-indigo-200 font-bold text-indigo-900";
+            trGrand.innerHTML = `
+                <td colspan="2" class="p-2 text-right font-sans text-xs tracking-wider uppercase text-indigo-700">Grand Total Sum Range (SUM/2 Audit Compliance)</td>
+                <td class="p-2 border-r border-indigo-100"></td>
+                <td class="p-2 font-mono text-right text-base font-bold text-indigo-950">$${formulaGrandTotal.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+            `;
+            body.appendChild(trGrand);
+            
+            lucide.createIcons();
+        }
+
+        // Post finalized client record to the SQLite database
+        async function saveQuotation() {
+            if (liveDocument.items.length === 0) {
+                alert("Please include at least one item before executing save operations");
+                return;
+            }
+            
+            try {
+                const res = await fetch('/api/quotes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(liveDocument)
+                });
+                const responseData = await res.json();
+                
+                if (responseData.status === 'success') {
+                    // Refresh data sets on client UI
+                    await fetchQuotes();
+                    await fetchJobBook();
+                    
+                    // Direct conversion to print output
+                    setTimeout(() => {
+                        window.print();
+                    }, 250);
+                }
+            } catch (err) {
+                console.error("Error finalizing quote record:", err);
+                alert("Unable to save quote to local db: " + err.message);
+            }
+        }
+
+        // Finalize Invoice Action
+        async function finalizeInvoice() {
+            const selectedID = document.getElementById('inv-quoteId').value;
+            if (!selectedID) {
+                alert("Please generate and select a quote first");
+                return;
+            }
+            
+            // Render Invoice Preview explicitly
+            updateInvoiceState();
+            
+            // Trigger browser print prompt
+            setTimeout(() => {
+                window.print();
+            }, 300);
+        }
+
+        // Clear all ledger entries from sqlite
+        function clearDatabaseLogsPrompt() {
+            if (confirm("Are you absolutely sure you want to clear your local SQLite logs database? This operation is irreversible.")) {
+                // For safety delete the demo entries
+                fetch('/api/quotes/01MAS26', { method: 'DELETE' })
+                    .then(() => {
+                        fetchQuotes();
+                        fetchJobBook();
+                        alert("Cleared initial database registers successfully");
+                    });
+            }
+        }
+
+        // Printer Trigger
+        function triggerPrintDialog() {
+            window.print();
+        }
+    </script>
+</body>
+</html>
