@@ -25,9 +25,9 @@ import { motion, AnimatePresence } from "motion/react";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import { JobBookEntry, DocumentDetails, LineItem, DocumentState } from "./types";
-import companyLogo from "./assets/images/company_logo_1780762745301.png";
 
 export default function App() {
+  const companyLogo = "/src/assets/images/company_logo_1780762745301.png";
 
   // Navigation & View Tab
   const [activeTab, setActiveTab] = useState<'quote' | 'invoice' | 'job_book' | 'design_docs'>('quote');
@@ -190,11 +190,7 @@ export default function App() {
     return localStorage.getItem("excel_app_companyPhone") || "0778 924 209";
   });
   const [brCompanyLogo, setBrCompanyLogo] = useState(() => {
-    const saved = localStorage.getItem("excel_app_companyLogo");
-    if (saved && (saved.startsWith("/src/assets/") || saved.includes("company_logo_1780762745301.png"))) {
-      return companyLogo; // Upgrade cached absolute development path to the relative bundled path
-    }
-    return saved || companyLogo;
+    return localStorage.getItem("excel_app_companyLogo") || companyLogo;
   });
   const [brShowLogo, setBrShowLogo] = useState(() => {
     const saved = localStorage.getItem("excel_app_showLogo");
@@ -1724,8 +1720,8 @@ export default function App() {
 
                 {/* Stepped Horizontal Divider Box Banner */}
                 <div className={`relative w-full select-none transition-all ${bannerHeightClass}`}>
-                  <div className="absolute left-0 bottom-0 right-[219px] h-[3px] bg-[#0A2E5C]"></div>
-                  <div className="absolute right-0 bottom-0 bg-white border-[3px] border-[#0A2E5C] border-b-0 px-8 flex items-center justify-center w-[220px] h-full" style={{ zIndex: 10 }}>
+                  <div className="absolute left-0 bottom-[1.5px] right-[180px] h-[3.5px] bg-[#0A2E5C]"></div>
+                  <div className="absolute right-0 bottom-0 bg-white border-[3px] border-[#0A2E5C] border-b-0 px-8 flex items-center justify-center min-w-[200px] h-full" style={{ zIndex: 10 }}>
                     <span 
                       className={`font-sans font-black uppercase tracking-wider text-zinc-950 transition-all ${bannerFontSizeClass}`}
                       style={{ color: '#09090b' }}
@@ -1906,9 +1902,7 @@ export default function App() {
                       className={`flex w-full items-stretch transition-colors ${
                         item ? 'bg-white' : 'bg-transparent'
                       } ${
-                        excelStyleMode === 'excel' 
-                          ? 'border-l border-b border-[#cbd5e1]' 
-                          : 'border-l border-r border-b border-zinc-950 rounded-none hover:bg-zinc-50/45'
+                        excelStyleMode === 'excel' ? 'border-l border-b border-[#cbd5e1]' : 'rounded-none hover:bg-zinc-50/45'
                       }`}
                       id={`excel-row-${rowNumber}`}
                     >
@@ -1924,28 +1918,28 @@ export default function App() {
                             <div className={`w-[10%] flex items-center justify-center font-bold ${
                               excelStyleMode === 'excel' 
                                 ? `border-r border-b border-[#cbd5e1] bg-zinc-50/30 ${rowPaddingClass} text-center font-mono ${rowFontSizeClass}` 
-                                : `${rowPaddingClass} text-center font-black text-zinc-900 border-r border-zinc-300 ${rowFontSizeClass}`
+                                : `border-l border-b border-zinc-950 ${rowPaddingClass} text-center font-black text-zinc-900 border-r border-zinc-300 ${rowFontSizeClass}`
                             }`}>
                               {item.qty}
                             </div>
                             <div className={`w-[55%] flex items-center ${
                               excelStyleMode === 'excel' 
                                 ? `border-r border-b border-[#cbd5e1] px-3 ${rowPaddingClass} text-slate-800 ${rowFontSizeClass}` 
-                                : `${rowPaddingClass} pl-4 pr-1 text-zinc-900 leading-relaxed font-bold ${rowFontSizeClass}`
+                                : `border-b border-zinc-950 ${rowPaddingClass} pl-4 pr-1 text-zinc-900 leading-relaxed font-bold ${rowFontSizeClass}`
                             }`}>
                               {item.desc}
                             </div>
                             <div className={`w-[17%] flex items-center justify-end font-mono ${
                               excelStyleMode === 'excel' 
                                 ? `border-r border-b border-[#cbd5e1] px-3 ${rowPaddingClass} text-slate-800 ${rowFontSizeClass}` 
-                                : `${rowPaddingClass} pr-4 text-right text-zinc-800 font-semibold border-l border-zinc-300 ${rowFontSizeClass}`
+                                : `border-b border-zinc-950 ${rowPaddingClass} pr-4 text-right text-zinc-800 font-semibold border-l border-zinc-300 ${rowFontSizeClass}`
                             }`}>
                               {formatCurrency(item.unitPrice)}
                             </div>
                             <div className={`w-[18%] flex items-center justify-end font-mono font-black ${
                               excelStyleMode === 'excel' 
                                 ? `border-b border-[#cbd5e1] px-3 ${rowPaddingClass} text-[#115e59] ${rowFontSizeClass}` 
-                                : `${rowPaddingClass} pr-4 text-right text-zinc-950 font-black border-l border-zinc-300 ${rowFontSizeClass}`
+                                : `border-r border-b border-zinc-950 ${rowPaddingClass} pr-4 text-right text-zinc-950 font-black border-l border-zinc-300 ${rowFontSizeClass}`
                             }`}>
                               {formatCurrency(item.total)}
                             </div>
