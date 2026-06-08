@@ -1591,16 +1591,16 @@ export default function App() {
             <div 
               ref={sheetRef} 
               id="quote-print-canvas"
-              className={`min-w-[660px] bg-white text-zinc-900 rounded border border-slate-300 relative mx-auto print:shadow-none print:border-none print:p-0 transition-all ${
+              className={`min-w-[660px] bg-white text-zinc-900 rounded border border-slate-300 relative mx-auto print:shadow-none print:border-none transition-all ${
                 excelStyleMode === 'excel' 
-                  ? 'p-3 pt-6' 
+                  ? 'p-3 pt-6 print:p-0' 
                   : isUltraCrowded 
-                    ? 'p-5' 
+                    ? 'p-5 print:p-4' 
                     : isVeryCrowded 
-                      ? 'p-6' 
+                      ? 'p-6 print:p-5' 
                       : isCrowded 
-                        ? 'p-8' 
-                        : 'p-10'
+                        ? 'p-8 print:p-6' 
+                        : 'p-10 print:p-8'
               }`} 
               style={{ minHeight: '960px', width: '100%', maxWidth: '760px' }}
             >
@@ -1743,52 +1743,52 @@ export default function App() {
                       
                       {/* Grid Body */}
                       <div className="flex flex-col">
-                        <div className="flex border-b border-zinc-300 items-center justify-start transition-all duration-300" style={{ minHeight: isVeryCrowded ? '24px' : '30px' }}>
-                          <span className="w-24 pl-3 font-bold text-zinc-650 uppercase tracking-tight text-[9px] select-none border-r border-zinc-300 flex items-center bg-zinc-50/70 h-full">Name</span>
-                          <span className={`flex-1 pl-4 text-zinc-955 font-black uppercase select-all ${isVeryCrowded ? 'text-[11px]' : 'text-[11.5px]'}`}>{sheetDoc.details.clientName}</span>
+                        <div className="flex border-b border-zinc-300 items-stretch justify-start" id="customer-row-name">
+                          <span className="w-24 pl-3 py-1.5 font-bold text-zinc-655 uppercase tracking-tight text-[9px] select-none border-r border-zinc-300 flex items-center bg-zinc-50/70">Name</span>
+                          <span className={`flex-1 pl-4 py-1.5 flex items-center text-zinc-955 font-black uppercase select-all ${isVeryCrowded ? 'text-[11px]' : 'text-[11.5px]'}`}>{sheetDoc.details.clientName}</span>
                         </div>
                         
-                        <div className="flex border-b border-zinc-300 items-center justify-start transition-all duration-300" style={{ minHeight: isVeryCrowded ? '24px' : '30px' }}>
-                          <span className="w-24 pl-3 font-bold text-zinc-655 uppercase tracking-tight text-[9px] select-none border-r border-zinc-300 flex items-center bg-zinc-50/70 h-full">Address</span>
-                          <span className={`flex-1 pl-4 text-zinc-805 font-extrabold select-all ${isVeryCrowded ? 'text-[11px]' : 'text-[11.5px]'}`}>{sheetDoc.details.addr}</span>
+                        <div className="flex border-b border-zinc-300 items-stretch justify-start" id="customer-row-addr">
+                          <span className="w-24 pl-3 py-1.5 font-bold text-zinc-655 uppercase tracking-tight text-[9px] select-none border-r border-zinc-300 flex items-center bg-zinc-50/70">Address</span>
+                          <span className={`flex-1 pl-4 py-1.5 flex items-center text-zinc-805 font-extrabold select-all ${isVeryCrowded ? 'text-[11px]' : 'text-[11.5px]'}`}>{sheetDoc.details.addr}</span>
                         </div>
                         
-                        <div className="flex border-b border-zinc-300 items-center justify-start transition-all duration-300" style={{ minHeight: isVeryCrowded ? '24px' : '30px' }}>
-                          <span className="w-24 pl-3 font-bold text-zinc-655 uppercase tracking-tight text-[9px] select-none border-r border-zinc-300 flex items-center bg-zinc-50/70 h-full">City</span>
-                          <span className={`flex-1 pl-4 text-zinc-805 font-extrabold select-all ${isVeryCrowded ? 'text-[11px]' : 'text-[11.5px]'}`}>{sheetDoc.details.city || 'Harare'}</span>
+                        <div className="flex border-b border-zinc-300 items-stretch justify-start" id="customer-row-city">
+                          <span className="w-24 pl-3 py-1.5 font-bold text-zinc-655 uppercase tracking-tight text-[9px] select-none border-r border-zinc-300 flex items-center bg-zinc-50/70">City</span>
+                          <span className={`flex-1 pl-4 py-1.5 flex items-center text-zinc-805 font-extrabold select-all ${isVeryCrowded ? 'text-[11px]' : 'text-[11.5px]'}`}>{sheetDoc.details.city || 'Harare'}</span>
                         </div>
                         
-                        <div className="flex items-center justify-start transition-all duration-300" style={{ minHeight: isVeryCrowded ? '24px' : '30px' }}>
-                          <span className="w-24 pl-3 font-bold text-zinc-655 uppercase tracking-tight text-[9px] select-none border-r border-zinc-300 flex items-center bg-zinc-50/70 h-full">Contact</span>
-                          <span className={`flex-1 pl-4 text-zinc-900 font-black select-all ${isVeryCrowded ? 'text-[11px]' : 'text-[11.5px]'}`}>{sheetDoc.details.contact}</span>
+                        <div className="flex items-stretch justify-start" id="customer-row-contact">
+                          <span className="w-24 pl-3 py-1.5 font-bold text-zinc-655 uppercase tracking-tight text-[9px] select-none border-r border-zinc-300 flex items-center bg-zinc-50/70">Contact</span>
+                          <span className={`flex-1 pl-4 py-1.5 flex items-center text-zinc-900 font-black select-all ${isVeryCrowded ? 'text-[11px]' : 'text-[11.5px]'}`}>{sheetDoc.details.contact}</span>
                         </div>
                       </div>
                     </div>
 
                     {/* Right Side: Misc Block */}
-                    <div className="col-span-5 flex flex-col border-[1.5px] border-zinc-950 rounded-none bg-white">
+                    <div className="col-span-12 md:col-span-5 flex flex-col border-[1.5px] border-zinc-950 rounded-none bg-white">
                       {/* Header bar */}
                       <div className="bg-[#0A2E5C] text-white px-3 py-1 text-[10.5px] font-black uppercase tracking-wider rounded-none">
                         Document Metadata
                       </div>
                       
                       {/* Grid Body */}
-                      <div className="flex flex-col h-full justify-between">
-                        <div className="flex border-b border-zinc-300 items-center flex-1 transition-all duration-300" style={{ minHeight: isVeryCrowded ? '24px' : '30px' }}>
-                          <span className="w-24 pl-3 font-bold text-zinc-650 uppercase tracking-tight text-[9px] select-none border-r border-zinc-300 h-full flex items-center bg-zinc-50/70">Date</span>
-                          <span className={`flex-1 pl-4 text-zinc-955 font-black font-mono select-all ${isVeryCrowded ? 'text-[11px]' : 'text-[11.5px]'}`}>{sheetDoc.details.date}</span>
+                      <div className="flex flex-col flex-1 justify-stretch">
+                        <div className="flex border-b border-zinc-300 items-stretch flex-1" id="metadata-row-date">
+                          <span className="w-24 pl-3 py-1.5 font-bold text-zinc-650 uppercase tracking-tight text-[9px] select-none border-r border-zinc-300 flex items-center bg-zinc-50/70">Date</span>
+                          <span className={`flex-1 pl-4 py-1.5 flex items-center text-zinc-955 font-black font-mono select-all ${isVeryCrowded ? 'text-[11px]' : 'text-[11.5px]'}`}>{sheetDoc.details.date}</span>
                         </div>
                         
-                        <div className="flex border-b border-zinc-300 items-center flex-1 transition-all duration-300" style={{ minHeight: isVeryCrowded ? '24px' : '30px' }}>
-                          <span className="w-24 pl-3 font-bold text-zinc-655 uppercase tracking-tight text-[9px] select-none border-r border-zinc-300 h-full flex items-center bg-zinc-50/70">Rep</span>
-                          <span className={`flex-1 pl-4 text-zinc-800 font-extrabold select-all ${isVeryCrowded ? 'text-[11px]' : 'text-[11.5px]'}`}>{sheetDoc.details.repName}</span>
+                        <div className="flex border-b border-zinc-300 items-stretch flex-1" id="metadata-row-rep">
+                          <span className="w-24 pl-3 py-1.5 font-bold text-zinc-655 uppercase tracking-tight text-[9px] select-none border-r border-zinc-300 flex items-center bg-zinc-50/70">Rep</span>
+                          <span className={`flex-1 pl-4 py-1.5 flex items-center text-zinc-800 font-extrabold select-all ${isVeryCrowded ? 'text-[11px]' : 'text-[11.5px]'}`}>{sheetDoc.details.repName}</span>
                         </div>
                         
-                        <div className="flex items-center flex-1 transition-all duration-300" style={{ minHeight: isVeryCrowded ? '24px' : '30px' }}>
-                          <span className="w-24 pl-3 font-bold text-zinc-655 uppercase tracking-tight text-[9px] select-none border-r border-zinc-300 h-full flex items-center bg-zinc-50/70">
+                        <div className="flex items-stretch flex-1" id="metadata-row-ref">
+                          <span className="w-24 pl-3 py-1.5 font-bold text-zinc-655 uppercase tracking-tight text-[9px] select-none border-r border-zinc-300 flex items-center bg-zinc-50/70">
                             {sheetDoc.type !== 'QUOTE' ? "Order #" : "Ref"}
                           </span>
-                          <span className={`flex-1 pl-4 text-[#0A2E5C] font-black font-mono select-all ${isVeryCrowded ? 'text-[11px]' : 'text-[11.5px]'}`}>
+                          <span className={`flex-1 pl-4 py-1.5 flex items-center text-[#0A2E5C] font-black font-mono select-all ${isVeryCrowded ? 'text-[11px]' : 'text-[11.5px]'}`}>
                             {sheetDoc.type !== 'QUOTE' ? (sheetDoc.details.orderNum || 'Verbal') : sheetDoc.details.jobID}
                           </span>
                         </div>
@@ -1854,37 +1854,33 @@ export default function App() {
                 )}
 
                 {/* ROW 15: Table Headers (Qty, Description, Unit Price, Total) */}
-                <div className={`flex w-full items-stretch ${excelStyleMode === 'excel' ? 'border-l border-b border-[#cbd5e1]' : 'mt-8'}`} id="excel-row-15">
-                  {excelStyleMode === 'excel' && (
-                    <div className="w-8 flex-shrink-0 bg-[#f8f9fa] border-r border-b border-[#cbd5e1] font-mono text-[9px] text-zinc-500 flex items-center justify-center font-bold select-none py-1.5 print:hidden">
-                      15
+                <div className={`flex w-full items-stretch ${excelStyleMode === 'excel' ? 'border-l border-b border-[#cbd5e1]' : ''}`} id="excel-row-15">
+                  {excelStyleMode === 'excel' ? (
+                    <>
+                      <div className="w-8 flex-shrink-0 bg-[#f8f9fa] border-r border-b border-[#cbd5e1] font-mono text-[9px] text-zinc-500 flex items-center justify-center font-bold select-none py-1.5 print:hidden">
+                        15
+                      </div>
+                      <div className="w-[10%] border-r border-b border-[#cbd5e1] bg-zinc-100 py-1.5 px-1 flex items-center justify-center font-bold text-[9px] text-slate-800 uppercase text-center font-mono select-none">
+                        Qty (A)
+                      </div>
+                      <div className="w-[55%] border-r border-b border-[#cbd5e1] bg-zinc-100 py-1.5 px-3 flex items-center font-bold text-[10px] text-slate-800 uppercase tracking-wide select-none">
+                        Description (B-H Merged Specification Schedule)
+                      </div>
+                      <div className="w-[17%] border-r border-b border-[#cbd5e1] bg-zinc-100 py-1.5 px-3 flex items-center justify-end font-bold text-[9px] text-slate-800 uppercase select-none font-mono">
+                        Unit Price (I)
+                      </div>
+                      <div className="w-[18%] border-b border-[#cbd5e1] bg-zinc-100 py-1.5 px-3 flex items-center justify-end font-bold text-[10px] text-slate-800 uppercase select-none font-mono">
+                        Total (J)
+                      </div>
+                    </>
+                  ) : (
+                    <div className="w-full flex bg-[#0A2E5C] text-white text-[10.5px] uppercase font-black tracking-wider py-2.5 border border-zinc-950 rounded-none mt-4 font-sans">
+                      <div className="w-[10%] text-center border-r border-white/20 select-none">Qty</div>
+                      <div className="w-[55%] text-left pl-4 select-none">Description</div>
+                      <div className="w-[17%] text-right pr-4 border-l border-white/20 select-none">Unit Price</div>
+                      <div className="w-[18%] text-right pr-4 select-none">Total</div>
                     </div>
                   )}
-                  <div className="flex-1 flex items-stretch min-w-0">
-                    {excelStyleMode === 'excel' ? (
-                      <>
-                        <div className="w-[10%] border-r border-b border-[#cbd5e1] bg-zinc-100 py-1 px-1 flex items-center justify-center font-bold text-[9px] text-slate-800 uppercase text-center font-mono select-none">
-                          Qty (A)
-                        </div>
-                        <div className="w-[55%] border-r border-b border-[#cbd5e1] bg-zinc-100 py-1 px-3 flex items-center font-bold text-[10px] text-slate-800 uppercase tracking-wide select-none">
-                          Description (B-H Merged Specification Schedule)
-                        </div>
-                        <div className="w-[17%] border-r border-b border-[#cbd5e1] bg-zinc-100 py-1 px-3 flex items-center justify-end font-bold text-[9px] text-slate-800 uppercase select-none font-mono">
-                          Unit Price (I)
-                        </div>
-                        <div className="w-[18%] border-b border-[#cbd5e1] bg-zinc-100 py-1 px-3 flex items-center justify-end font-bold text-[10px] text-slate-800 uppercase select-none font-mono">
-                          Total (J)
-                        </div>
-                      </>
-                    ) : (
-                      <div className="w-full flex bg-[#0A2E5C] text-white text-[10.5px] uppercase font-black tracking-wider py-2.5 border border-zinc-950 rounded-none mt-4 font-sans">
-                        <div className="w-[10%] text-center border-r border-white/20 select-none">Qty</div>
-                        <div className="w-[55%] text-left pl-4 select-none">Description</div>
-                        <div className="w-[17%] text-right pr-4 border-l border-white/20 select-none">Unit Price</div>
-                        <div className="w-[18%] text-right pr-4 select-none">Total</div>
-                      </div>
-                    )}
-                  </div>
                 </div>
 
                 {/* ROWS 16 to 28: Exact items scheduler slots! Fill with active entries, otherwise render empty cell grid! */}
@@ -1912,48 +1908,46 @@ export default function App() {
                         </div>
                       )}
                       
-                      <div className="flex-1 flex items-stretch min-w-0">
-                        {item ? (
-                          <>
-                            <div className={`w-[10%] flex items-center justify-center font-bold ${
-                              excelStyleMode === 'excel' 
-                                ? `border-r border-b border-[#cbd5e1] bg-zinc-50/30 ${rowPaddingClass} text-center font-mono ${rowFontSizeClass}` 
-                                : `border-l border-b border-zinc-950 ${rowPaddingClass} text-center font-black text-zinc-900 border-r border-zinc-300 ${rowFontSizeClass}`
-                            }`}>
-                              {item.qty}
-                            </div>
-                            <div className={`w-[55%] flex items-center ${
-                              excelStyleMode === 'excel' 
-                                ? `border-r border-b border-[#cbd5e1] px-3 ${rowPaddingClass} text-slate-800 ${rowFontSizeClass}` 
-                                : `border-b border-zinc-950 ${rowPaddingClass} pl-4 pr-1 text-zinc-900 leading-relaxed font-bold ${rowFontSizeClass}`
-                            }`}>
-                              {item.desc}
-                            </div>
-                            <div className={`w-[17%] flex items-center justify-end font-mono ${
-                              excelStyleMode === 'excel' 
-                                ? `border-r border-b border-[#cbd5e1] px-3 ${rowPaddingClass} text-slate-800 ${rowFontSizeClass}` 
-                                : `border-b border-zinc-950 ${rowPaddingClass} pr-4 text-right text-zinc-800 font-semibold border-l border-zinc-300 ${rowFontSizeClass}`
-                            }`}>
-                              {formatCurrency(item.unitPrice)}
-                            </div>
-                            <div className={`w-[18%] flex items-center justify-end font-mono font-black ${
-                              excelStyleMode === 'excel' 
-                                ? `border-b border-[#cbd5e1] px-3 ${rowPaddingClass} text-[#115e59] ${rowFontSizeClass}` 
-                                : `border-r border-b border-zinc-950 ${rowPaddingClass} pr-4 text-right text-zinc-950 font-black border-l border-zinc-300 ${rowFontSizeClass}`
-                            }`}>
-                              {formatCurrency(item.total)}
-                            </div>
-                          </>
-                        ) : (
-                          /* Visual empty spacer rows matching Excel cells */
-                          <>
-                            <div className="w-[10%] border-r border-b border-[#cbd5e1] bg-zinc-50/10" style={{ minHeight: isUltraCrowded ? '20px' : isVeryCrowded ? '24px' : '32px' }}></div>
-                            <div className="w-[55%] border-r border-b border-[#cbd5e1] px-3"></div>
-                            <div className="w-[17%] border-r border-b border-[#cbd5e1] px-3"></div>
-                            <div className="w-[18%] border-b border-[#cbd5e1] px-3"></div>
-                          </>
-                        )}
-                      </div>
+                      {item ? (
+                        <>
+                          <div className={`w-[10%] flex items-center justify-center font-bold ${
+                            excelStyleMode === 'excel' 
+                              ? `border-r border-b border-[#cbd5e1] bg-zinc-50/30 ${rowPaddingClass} text-center font-mono ${rowFontSizeClass}` 
+                              : `border-l border-b border-zinc-950 ${rowPaddingClass} text-center font-black text-zinc-900 border-r border-zinc-300 ${rowFontSizeClass}`
+                          }`}>
+                            {item.qty}
+                          </div>
+                          <div className={`w-[55%] flex items-center ${
+                            excelStyleMode === 'excel' 
+                              ? `border-r border-b border-[#cbd5e1] px-3 ${rowPaddingClass} text-slate-800 ${rowFontSizeClass}` 
+                              : `border-b border-zinc-950 ${rowPaddingClass} pl-4 pr-1 text-zinc-900 leading-relaxed font-bold ${rowFontSizeClass}`
+                          }`}>
+                            {item.desc}
+                          </div>
+                          <div className={`w-[17%] flex items-center justify-end font-mono ${
+                            excelStyleMode === 'excel' 
+                              ? `border-r border-b border-[#cbd5e1] px-3 ${rowPaddingClass} text-slate-800 ${rowFontSizeClass}` 
+                              : `border-b border-zinc-950 ${rowPaddingClass} pr-4 text-right text-zinc-800 font-semibold border-l border-zinc-300 ${rowFontSizeClass}`
+                          }`}>
+                            {formatCurrency(item.unitPrice)}
+                          </div>
+                          <div className={`w-[18%] flex items-center justify-end font-mono font-black ${
+                            excelStyleMode === 'excel' 
+                              ? `border-b border-[#cbd5e1] px-3 ${rowPaddingClass} text-[#115e59] ${rowFontSizeClass}` 
+                              : `border-r border-b border-zinc-950 ${rowPaddingClass} pr-4 text-right text-zinc-950 font-black border-l border-zinc-300 ${rowFontSizeClass}`
+                          }`}>
+                            {formatCurrency(item.total)}
+                          </div>
+                        </>
+                      ) : (
+                        /* Visual empty spacer rows matching Excel cells */
+                        <>
+                          <div className="w-[10%] border-r border-b border-[#cbd5e1] bg-zinc-50/10" style={{ minHeight: isUltraCrowded ? '20px' : isVeryCrowded ? '24px' : '32px' }}></div>
+                          <div className="w-[55%] border-r border-b border-[#cbd5e1] px-3"></div>
+                          <div className="w-[17%] border-r border-b border-[#cbd5e1] px-3"></div>
+                          <div className="w-[18%] border-b border-[#cbd5e1] px-3"></div>
+                        </>
+                      )}
                     </div>
                   );
                 })}
