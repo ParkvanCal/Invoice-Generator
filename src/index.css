@@ -37,7 +37,7 @@ textarea {
 /* Perfect print layout stylesheets. Isolates the Excel sheet template entirely onto clean pages. */
 @page {
   size: portrait;
-  margin: 10mm; /* Symmetrical margin all around - top, bottom, left, and right gaps are equal */
+  margin: 0; /* Hides default print headers and footers (date, title, URL, page number) */
 }
 
 @media print {
@@ -139,13 +139,13 @@ textarea {
     justify-content: space-between !important;
     background-color: #ffffff !important;
     color: #09090b !important;
-    margin: 0 !important;
+    margin: 12mm 15mm 12mm 15mm !important; /* Perfect Margins for printed page */
     padding: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 100% !important;
-    height: 100% !important;
-    min-height: 100% !important;
+    width: calc(100% - 30mm) !important;
+    max-width: calc(100% - 30mm) !important;
+    min-width: calc(100% - 30mm) !important;
+    height: calc(100% - 24mm) !important;
+    min-height: calc(100% - 24mm) !important;
     box-shadow: none !important;
     border: none !important;
     page-break-inside: avoid !important;
@@ -165,6 +165,27 @@ textarea {
   .text-red-print {
     color: #dc2626 !important;
   }
+
+  /* Fixed positioning for rebranded print footer in the bottom-left corner */
+  .custom-print-url-footer {
+    position: fixed !important;
+    bottom: 8mm !important;
+    left: 12mm !important;
+    font-size: 8px !important;
+    font-family: var(--font-sans), sans-serif !important;
+    color: #a1a1aa !important; /* text-zinc-400 */
+    text-transform: lowercase !important;
+    letter-spacing: 0.05em !important;
+    font-weight: 600 !important;
+    display: block !important;
+    z-index: 9999 !important;
+    background-color: transparent !important;
+  }
+}
+
+/* Default screen hiding for rebranded print footer */
+.custom-print-url-footer {
+  display: none !important;
 }
 
 /* Bulletproof Flat Border Styles to resolve Tailwind v4 custom property compilation bugs */

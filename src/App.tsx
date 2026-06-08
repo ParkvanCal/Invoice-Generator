@@ -2245,6 +2245,10 @@ export default function App() {
 
           </div>
 
+          <div className="custom-print-url-footer">
+            https://parkvan-calibration.co.zw/
+          </div>
+
           <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl text-xs space-y-1 print:hidden">
             <span className="font-bold text-white block">💡 Dynamic Simulation Mechanics:</span>
             <p className="text-slate-400">
