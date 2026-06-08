@@ -264,27 +264,15 @@ export default function App() {
 
   // Dynamic Document Title for OS Print default naming system
   useEffect(() => {
-    let originalTitle = document.title;
-
-    const handleBeforePrint = () => {
-      originalTitle = document.title;
-      const cleanClient = (sheetDoc.details.clientName || 'CLIENT').replace(/[^a-zA-Z0-9]/g, '_');
-      const docId = sheetDoc.details.jobID || 'DOCUMENT';
-      const docType = sheetDoc.type || 'DOCUMENT';
-      document.title = `${docId}_${cleanClient}_${docType}`;
-    };
-
-    const handleAfterPrint = () => {
-      document.title = originalTitle;
-    };
-
-    window.addEventListener('beforeprint', handleBeforePrint);
-    window.addEventListener('afterprint', handleAfterPrint);
-
-    return () => {
-      window.removeEventListener('beforeprint', handleBeforePrint);
-      window.removeEventListener('afterprint', handleAfterPrint);
-    };
+    const cleanClient = (sheetDoc.details.clientName || 'CLIENT')
+      .replace(/[^a-zA-Z0-9\s]/g, '') // remove special characters
+      .trim()
+      .replace(/\s+/g, '_')          // replace spaces with underscores
+      .toUpperCase();
+    const docId = (sheetDoc.details.jobID || 'DOCUMENT').trim().replace(/\s+/g, '_').toUpperCase();
+    const docType = (sheetDoc.type || 'DOCUMENT').trim().toUpperCase();
+    
+    document.title = `${docId}_${cleanClient}_${docType}`;
   }, [sheetDoc.details.clientName, sheetDoc.details.jobID, sheetDoc.type]);
 
   const [dragOver, setDragOver] = useState(false);
