@@ -37,7 +37,7 @@ textarea {
 /* Perfect print layout stylesheets. Isolates the Excel sheet template entirely onto clean pages. */
 @page {
   size: portrait;
-  margin: 0 !important; /* Hides default print headers and footers (date, title, URL, page number) */
+  margin: 0; /* Hides default print headers and footers (date, title, URL, page number) */
 }
 
 @media print {
