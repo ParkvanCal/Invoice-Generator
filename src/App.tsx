@@ -2227,9 +2227,19 @@ export default function App() {
                         {brCompanyFooterTagline}
                       </span>
                       
-                      <span className="font-mono font-bold select-text">
-                        {brCompanyEmail || 'sales@parkvancalibration.co.zw'}
-                      </span>
+                      <div className="flex flex-col items-center">
+                        <a 
+                          href="https://parkvan-calibration.co.zw/"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-sans font-black text-[#0A2E5C] text-[11px] hover:underline"
+                        >
+                          https://parkvan-calibration.co.zw/
+                        </a>
+                        <span className="font-mono text-[9px] text-zinc-500 font-bold select-text mt-0.5">
+                          {brCompanyEmail || 'info@parkvan-calibration.co.zw'}
+                        </span>
+                      </div>
 
                       <div className="flex items-center gap-4 font-mono font-bold">
                         <span className="select-text">{brCompanyPhone || '+263 77 241 3600'}</span>
