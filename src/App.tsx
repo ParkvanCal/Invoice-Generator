@@ -1620,11 +1620,10 @@ export default function App() {
 
               {/* Excel Sheets Grid Rows mapped precisely with double formula summations */}
               <div className={`w-full flex flex-col ${excelStyleMode === 'excel' ? 'border-r border-[#cbd5e1]' : 'gap-1'}`}>
-                
-                {/* ROW 1: Branding Name, Elegant Logo & Metadata Info Header */}
+                     {/* ROW 1: Branding Name, Elegant Logo & Metadata Info Header */}
                 <div className="w-full" id="excel-row-1">
                   {excelStyleMode === 'clean' ? (
-                    <div className="w-full flex justify-between items-center pb-3 border-b-[2px] border-zinc-950 gap-4">
+                    <div className="w-full flex justify-between items-center pb-3 border-b-[2px] border-[#09090b] gap-4">
                       {/* Left Side: Logo Block (visually balanced & compact) */}
                       <div className="flex items-center select-none justify-start min-w-[150px]">
                         {brShowLogo && brCompanyLogo && (
@@ -1671,7 +1670,7 @@ export default function App() {
                     </div>
                   ) : (
                     /* ORIGINAL CELL GRID STRUCTURE FOR EXCEL TABULAR ROW */
-                    <div className="w-full flex justify-between items-center pb-3 border-b border-zinc-200 gap-4" id="original_header_grid">
+                    <div className="w-full flex justify-between items-center pb-3 border-b border-[#e4e4e7] gap-4" id="original_header_grid">
                       {/* Left Side Logo */}
                       <div className="flex items-center select-none justify-start min-w-[120px]">
                         {brShowLogo && brCompanyLogo && (
@@ -1735,7 +1734,7 @@ export default function App() {
                 {excelStyleMode === 'clean' ? (
                   <div className={`grid grid-cols-12 w-full select-text font-sans transition-all ${billingBlockMarginClass}`}>
                     {/* Left Side: Customer Info Block */}
-                    <div className="col-span-7 flex flex-col border-[1.5px] border-zinc-950 rounded-none bg-white">
+                    <div className="col-span-7 flex flex-col border-[1.5px] border-[#09090b] rounded-none bg-white">
                       {/* Header bar */}
                       <div className="bg-[#0A2E5C] text-white px-3 py-1 text-[10.5px] font-black uppercase tracking-wider rounded-none">
                         Customer Details
@@ -1743,30 +1742,30 @@ export default function App() {
                       
                       {/* Grid Body */}
                       <div className="flex flex-col">
-                        <div className="flex border-b border-zinc-300 items-stretch justify-start" id="customer-row-name">
-                          <span className="w-24 pl-3 py-1.5 font-bold text-zinc-655 uppercase tracking-tight text-[9px] select-none border-r border-zinc-300 flex items-center bg-zinc-50/70">Name</span>
+                        <div className="flex border-b border-[#d4d4d8] items-stretch justify-start" id="customer-row-name">
+                          <span className="w-24 pl-3 py-1.5 font-bold text-zinc-655 uppercase tracking-tight text-[9px] select-none border-r border-[#d4d4d8] flex items-center bg-zinc-50/70">Name</span>
                           <span className={`flex-1 pl-4 py-1.5 flex items-center text-zinc-955 font-black uppercase select-all ${isVeryCrowded ? 'text-[11px]' : 'text-[11.5px]'}`}>{sheetDoc.details.clientName}</span>
                         </div>
                         
-                        <div className="flex border-b border-zinc-300 items-stretch justify-start" id="customer-row-addr">
-                          <span className="w-24 pl-3 py-1.5 font-bold text-zinc-655 uppercase tracking-tight text-[9px] select-none border-r border-zinc-300 flex items-center bg-zinc-50/70">Address</span>
+                        <div className="flex border-b border-[#d4d4d8] items-stretch justify-start" id="customer-row-addr">
+                          <span className="w-24 pl-3 py-1.5 font-bold text-zinc-655 uppercase tracking-tight text-[9px] select-none border-r border-[#d4d4d8] flex items-center bg-zinc-50/70">Address</span>
                           <span className={`flex-1 pl-4 py-1.5 flex items-center text-zinc-805 font-extrabold select-all ${isVeryCrowded ? 'text-[11px]' : 'text-[11.5px]'}`}>{sheetDoc.details.addr}</span>
                         </div>
                         
-                        <div className="flex border-b border-zinc-300 items-stretch justify-start" id="customer-row-city">
-                          <span className="w-24 pl-3 py-1.5 font-bold text-zinc-655 uppercase tracking-tight text-[9px] select-none border-r border-zinc-300 flex items-center bg-zinc-50/70">City</span>
+                        <div className="flex border-b border-[#d4d4d8] items-stretch justify-start" id="customer-row-city">
+                          <span className="w-24 pl-3 py-1.5 font-bold text-zinc-655 uppercase tracking-tight text-[9px] select-none border-r border-[#d4d4d8] flex items-center bg-zinc-50/70">City</span>
                           <span className={`flex-1 pl-4 py-1.5 flex items-center text-zinc-805 font-extrabold select-all ${isVeryCrowded ? 'text-[11px]' : 'text-[11.5px]'}`}>{sheetDoc.details.city || 'Harare'}</span>
                         </div>
                         
                         <div className="flex items-stretch justify-start" id="customer-row-contact">
-                          <span className="w-24 pl-3 py-1.5 font-bold text-zinc-655 uppercase tracking-tight text-[9px] select-none border-r border-zinc-300 flex items-center bg-zinc-50/70">Contact</span>
+                          <span className="w-24 pl-3 py-1.5 font-bold text-zinc-655 uppercase tracking-tight text-[9px] select-none border-r border-[#d4d4d8] flex items-center bg-zinc-50/70">Contact</span>
                           <span className={`flex-1 pl-4 py-1.5 flex items-center text-zinc-900 font-black select-all ${isVeryCrowded ? 'text-[11px]' : 'text-[11.5px]'}`}>{sheetDoc.details.contact}</span>
                         </div>
                       </div>
                     </div>
 
-                    {/* Right Side: Misc Block */}
-                    <div className="col-span-12 md:col-span-5 flex flex-col border-[1.5px] border-zinc-950 rounded-none bg-white">
+                    {/* Right Side: Misc Block - static col-span-5 to protect side-by-side printing layout block */}
+                    <div className="col-span-5 flex flex-col border-[1.5px] border-[#09090b] rounded-none bg-white">
                       {/* Header bar */}
                       <div className="bg-[#0A2E5C] text-white px-3 py-1 text-[10.5px] font-black uppercase tracking-wider rounded-none">
                         Document Metadata
@@ -1774,18 +1773,18 @@ export default function App() {
                       
                       {/* Grid Body */}
                       <div className="flex flex-col flex-1 justify-stretch">
-                        <div className="flex border-b border-zinc-300 items-stretch flex-1" id="metadata-row-date">
-                          <span className="w-24 pl-3 py-1.5 font-bold text-zinc-650 uppercase tracking-tight text-[9px] select-none border-r border-zinc-300 flex items-center bg-zinc-50/70">Date</span>
+                        <div className="flex border-b border-[#d4d4d8] items-stretch flex-1" id="metadata-row-date">
+                          <span className="w-24 pl-3 py-1.5 font-bold text-zinc-650 uppercase tracking-tight text-[9px] select-none border-r border-[#d4d4d8] flex items-center bg-zinc-50/70">Date</span>
                           <span className={`flex-1 pl-4 py-1.5 flex items-center text-zinc-955 font-black font-mono select-all ${isVeryCrowded ? 'text-[11px]' : 'text-[11.5px]'}`}>{sheetDoc.details.date}</span>
                         </div>
                         
-                        <div className="flex border-b border-zinc-300 items-stretch flex-1" id="metadata-row-rep">
-                          <span className="w-24 pl-3 py-1.5 font-bold text-zinc-655 uppercase tracking-tight text-[9px] select-none border-r border-zinc-300 flex items-center bg-zinc-50/70">Rep</span>
+                        <div className="flex border-b border-[#d4d4d8] items-stretch flex-1" id="metadata-row-rep">
+                          <span className="w-24 pl-3 py-1.5 font-bold text-zinc-655 uppercase tracking-tight text-[9px] select-none border-r border-[#d4d4d8] flex items-center bg-zinc-50/70">Rep</span>
                           <span className={`flex-1 pl-4 py-1.5 flex items-center text-zinc-800 font-extrabold select-all ${isVeryCrowded ? 'text-[11px]' : 'text-[11.5px]'}`}>{sheetDoc.details.repName}</span>
                         </div>
                         
                         <div className="flex items-stretch flex-1" id="metadata-row-ref">
-                          <span className="w-24 pl-3 py-1.5 font-bold text-zinc-655 uppercase tracking-tight text-[9px] select-none border-r border-zinc-300 flex items-center bg-zinc-50/70">
+                          <span className="w-24 pl-3 py-1.5 font-bold text-zinc-655 uppercase tracking-tight text-[9px] select-none border-r border-[#d4d4d8] flex items-center bg-zinc-50/70">
                             {sheetDoc.type !== 'QUOTE' ? "Order #" : "Ref"}
                           </span>
                           <span className={`flex-1 pl-4 py-1.5 flex items-center text-[#0A2E5C] font-black font-mono select-all ${isVeryCrowded ? 'text-[11px]' : 'text-[11.5px]'}`}>
@@ -1874,7 +1873,7 @@ export default function App() {
                       </div>
                     </>
                   ) : (
-                    <div className="w-full flex bg-[#0A2E5C] text-white text-[10.5px] uppercase font-black tracking-wider py-2.5 border border-zinc-950 rounded-none mt-4 font-sans">
+                    <div className="w-full flex bg-[#0A2E5C] text-white text-[10.5px] uppercase font-black tracking-wider py-2.5 border border-[#09090b] rounded-none mt-4 font-sans">
                       <div className="w-[10%] text-center border-r border-white/20 select-none">Qty</div>
                       <div className="w-[55%] text-left pl-4 select-none">Description</div>
                       <div className="w-[17%] text-right pr-4 border-l border-white/20 select-none">Unit Price</div>
@@ -1913,28 +1912,28 @@ export default function App() {
                           <div className={`w-[10%] flex items-center justify-center font-bold ${
                             excelStyleMode === 'excel' 
                               ? `border-r border-b border-[#cbd5e1] bg-zinc-50/30 ${rowPaddingClass} text-center font-mono ${rowFontSizeClass}` 
-                              : `border-l border-b border-zinc-950 ${rowPaddingClass} text-center font-black text-zinc-900 border-r border-zinc-300 ${rowFontSizeClass}`
+                              : `border-l border-b border-[#09090b] ${rowPaddingClass} text-center font-black text-zinc-900 border-r border-[#cbd5e1] ${rowFontSizeClass}`
                           }`}>
                             {item.qty}
                           </div>
                           <div className={`w-[55%] flex items-center ${
                             excelStyleMode === 'excel' 
                               ? `border-r border-b border-[#cbd5e1] px-3 ${rowPaddingClass} text-slate-800 ${rowFontSizeClass}` 
-                              : `border-b border-zinc-950 ${rowPaddingClass} pl-4 pr-1 text-zinc-900 leading-relaxed font-bold ${rowFontSizeClass}`
+                              : `border-b border-[#09090b] ${rowPaddingClass} pl-4 pr-1 text-zinc-900 leading-relaxed font-bold ${rowFontSizeClass}`
                           }`}>
                             {item.desc}
                           </div>
                           <div className={`w-[17%] flex items-center justify-end font-mono ${
                             excelStyleMode === 'excel' 
                               ? `border-r border-b border-[#cbd5e1] px-3 ${rowPaddingClass} text-slate-800 ${rowFontSizeClass}` 
-                              : `border-b border-zinc-950 ${rowPaddingClass} pr-4 text-right text-zinc-800 font-semibold border-l border-zinc-300 ${rowFontSizeClass}`
+                              : `border-b border-[#09090b] ${rowPaddingClass} pr-4 text-right text-zinc-800 font-semibold border-l border-[#cbd5e1] ${rowFontSizeClass}`
                           }`}>
                             {formatCurrency(item.unitPrice)}
                           </div>
                           <div className={`w-[18%] flex items-center justify-end font-mono font-black ${
                             excelStyleMode === 'excel' 
                               ? `border-b border-[#cbd5e1] px-3 ${rowPaddingClass} text-[#115e59] ${rowFontSizeClass}` 
-                              : `border-r border-b border-zinc-950 ${rowPaddingClass} pr-4 text-right text-zinc-950 font-black border-l border-zinc-300 ${rowFontSizeClass}`
+                              : `border-r border-b border-[#09090b] ${rowPaddingClass} pr-4 text-right text-zinc-955 font-black border-l border-[#cbd5e1] ${rowFontSizeClass}`
                           }`}>
                             {formatCurrency(item.total)}
                           </div>
@@ -1974,11 +1973,11 @@ export default function App() {
                         </div>
                       </>
                     ) : (
-                      <div className="w-full flex text-[10px] border-l border-r border-b border-zinc-950 bg-zinc-50/40">
+                      <div className="w-full flex text-[10px] border-l border-r border-b border-[#09090b] bg-zinc-50/40">
                         <div className="w-[10%]"></div>
                         <div className="w-[55%]"></div>
                         <div className="w-[17%] text-[#0A2E5C] pr-4 font-black uppercase tracking-wider select-none flex items-center justify-end h-9">Subtotal</div>
-                        <div className="w-[18%] text-right pr-4 font-mono font-black text-zinc-950 text-[11px] border-l border-zinc-300 flex items-center justify-end h-9">{formatCurrency(currentQuoteSubtotal)}</div>
+                        <div className="w-[18%] text-right pr-4 font-mono font-black text-[#09090b] text-[11px] border-l border-[#cbd5e1] flex items-center justify-end h-9">{formatCurrency(currentQuoteSubtotal)}</div>
                       </div>
                     )}
                   </div>
@@ -2031,7 +2030,7 @@ export default function App() {
                           <div className="w-[17%] border-r border-b border-[#cbd5e1] px-3 py-1 font-bold text-[9px] text-slate-800 text-right flex items-center justify-end uppercase bg-zinc-100 font-mono">
                             GRAND TOTAL (J32)
                           </div>
-                          <div className="w-[18%] border-b-2 border-double border-slate-900 bg-zinc-100/50 px-3 py-1 font-mono text-[13px] font-black text-slate-900 text-right underline decoration-double flex items-center justify-end" id="cell-j32">
+                          <div className="w-[18%] border-b-2 border-double border-[#0f172a] bg-zinc-100/50 px-3 py-1 font-mono text-[13px] font-black text-slate-900 text-right underline decoration-double flex items-center justify-end" id="cell-j32">
                             {formatCurrency(grandTotalResult)}
                           </div>
                         </>
@@ -2040,7 +2039,7 @@ export default function App() {
                           <div className="w-[10%]"></div>
                           <div className="w-[55%]"></div>
                           <div className="w-[17%] text-right pr-4 font-black text-zinc-900 uppercase tracking-widest flex items-center justify-end text-[12px] select-none">TOTAL DUE</div>
-                          <div className="w-[18%] text-right pr-2 font-mono text-2xl font-black text-zinc-950 underline decoration-double select-all" id="cell-j32">
+                          <div className="w-[18%] text-right pr-2 font-mono text-2xl font-black text-zinc-955 underline decoration-double select-all" id="cell-j32">
                             {formatCurrency(grandTotalResult)}
                           </div>
                         </div>
@@ -2050,7 +2049,7 @@ export default function App() {
                 )}
 
                 {/* ROW 33 to 35: Footer notes and signature spaces */}
-                <div className={`flex w-full items-stretch ${excelStyleMode === 'excel' ? 'border-l border-b border-[#cbd5e1]' : 'mt-8 pt-6 border-t border-dashed border-zinc-200'}`} id="excel-row-33">
+                <div className={`flex w-full items-stretch ${excelStyleMode === 'excel' ? 'border-l border-b border-[#cbd5e1]' : 'mt-8 pt-6 border-t border-dashed border-[#e4e4e7]'}`} id="excel-row-33">
                   {excelStyleMode === 'excel' && (
                     <div className="w-8 flex-shrink-0 bg-[#f8f9fa] border-r border-b border-[#cbd5e1] font-mono text-[9px] text-zinc-500 flex items-center justify-center font-bold select-none py-1 print:hidden">
                       33
@@ -2075,25 +2074,25 @@ export default function App() {
                               <div className="col-span-7 flex flex-col">
                                 {/* Payment Row */}
                                 <div className={`flex items-stretch w-full ${isVeryCrowded ? 'mb-1.5' : 'mb-3'}`}>
-                                  <div className="w-24 pb-0.5 border-b-[2.5px] border-zinc-950 font-black text-[12px] text-zinc-950 uppercase tracking-wider flex items-end">
+                                  <div className="w-24 pb-0.5 border-b-[2.5px] border-[#09090b] font-black text-[12px] text-zinc-950 uppercase tracking-wider flex items-end">
                                     Payment:
                                   </div>
-                                  <div className={`flex-1 border-t-[2.5px] border-l-[2.5px] border-r-[2.5px] border-zinc-950 px-4 text-zinc-950 font-black text-[11.5px] bg-white h-7 flex items-center ${isVeryCrowded ? 'py-0.5' : 'py-1'}`}>
+                                  <div className={`flex-1 border-t-[2.5px] border-l-[2.5px] border-r-[2.5px] border-[#09090b] px-4 text-zinc-950 font-black text-[11.5px] bg-white h-7 flex items-center ${isVeryCrowded ? 'py-0.5' : 'py-1'}`}>
                                     Cash
                                   </div>
                                 </div>
 
                                 {/* Comments block with solid right border representing excel boundary */}
-                                <div className="flex-1 border-r-[2.5px] border-zinc-950 flex flex-col pr-6 pt-1">
+                                <div className="flex-1 border-r-[2.5px] border-[#09090b] flex flex-col pr-6 pt-1">
                                   <span className="font-black text-[12px] text-zinc-950 uppercase tracking-wider mb-1">
                                     Comments:
                                   </span>
                                   <div className={`flex flex-col pl-6 w-full ${isVeryCrowded ? 'gap-2' : 'gap-3.5'}`}>
-                                    <div className="border-b-[1.5px] border-zinc-950 pb-0.5 text-[11px] font-black text-zinc-950 tracking-wide italic">
+                                    <div className="border-b-[1.5px] border-[#09090b] pb-0.5 text-[11px] font-black text-zinc-950 tracking-wide italic">
                                       Amounts are in United States
                                     </div>
-                                    <div className="border-b-[1.5px] border-zinc-950" style={{ height: isVeryCrowded ? '12px' : '20px' }}></div>
-                                    <div className="border-b-[1.5px] border-zinc-950" style={{ height: isVeryCrowded ? '12px' : '20px' }}></div>
+                                    <div className="border-b-[1.5px] border-[#09090b]" style={{ height: isVeryCrowded ? '12px' : '20px' }}></div>
+                                    <div className="border-b-[1.5px] border-[#09090b]" style={{ height: isVeryCrowded ? '12px' : '20px' }}></div>
                                   </div>
                                 </div>
                               </div>
@@ -2102,13 +2101,13 @@ export default function App() {
                               <div className="col-span-5 flex flex-col justify-between pt-1">
                                 {/* Tax Rates */}
                                 <div className={`flex justify-end items-center gap-4 ${isVeryCrowded ? 'mb-2' : 'mb-3.5'}`}>
-                                  <span className="font-extrabold text-[10.5px] text-zinc-950 uppercase tracking-wider">
+                                  <span className="font-extrabold text-[10.5px] text-zinc-955 uppercase tracking-wider">
                                     Tax Rate(s)
                                   </span>
-                                  <div className="grid grid-cols-2 border-[1.5px] border-zinc-400 bg-zinc-100">
-                                    <div className="border-r border-b border-zinc-400 w-12 h-4 bg-zinc-100"></div>
-                                    <div className="border-b border-zinc-400 w-12 h-4 bg-zinc-100"></div>
-                                    <div className="border-r border-zinc-400 w-12 h-4 bg-zinc-100"></div>
+                                  <div className="grid grid-cols-2 border-[1.5px] border-[#a1a1aa] bg-zinc-100">
+                                    <div className="border-r border-b border-[#a1a1aa] w-12 h-4 bg-zinc-100"></div>
+                                    <div className="border-b border-[#a1a1aa] w-12 h-4 bg-zinc-100"></div>
+                                    <div className="border-r border-[#a1a1aa] w-12 h-4 bg-zinc-100"></div>
                                     <div className="w-12 h-4 bg-zinc-100"></div>
                                   </div>
                                 </div>
@@ -2118,25 +2117,25 @@ export default function App() {
                                   <span className="font-black text-[11.5px] text-zinc-950 uppercase tracking-widest leading-none">
                                     GRAND TOTAL:
                                   </span>
-                                  <div className="border-[2px] border-zinc-950 bg-[#FEF9C3] px-3.5 py-1.5 flex items-center justify-between shadow-3xs" style={{ minWidth: '135px' }}>
+                                  <div className="border-[2px] border-[#09090b] bg-[#FEF9C3] px-3.5 py-1.5 flex items-center justify-between shadow-3xs" style={{ minWidth: '135px' }}>
                                     <span className="font-black text-[12px] text-zinc-950">
                                       {activeCurrency}
                                     </span>
-                                    <span className="font-black font-mono text-[12.5px] text-zinc-950 text-right">
+                                    <span className="font-black font-mono text-[12.5px] text-zinc-955 text-right">
                                       {grandTotalResult.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                     </span>
                                   </div>
                                 </div>
 
                                 {/* Light cyan Thank you banner */}
-                                <div className={`w-full text-center bg-[#CCFFFA]/30 border-[1.5px] border-zinc-950 rounded-none font-sans font-black text-zinc-950 text-[12px] tracking-widest uppercase select-none shadow-3xs ${isVeryCrowded ? 'py-1.5' : 'py-3'}`}>
+                                <div className={`w-full text-center bg-[#CCFFFA]/30 border-[1.5px] border-[#09090b] rounded-none font-sans font-black text-zinc-950 text-[12px] tracking-widest uppercase select-none shadow-3xs ${isVeryCrowded ? 'py-1.5' : 'py-3'}`}>
                                   Thank you.
                                 </div>
                               </div>
                             </div>
 
                             {/* Wide enclosed Banking and Payment details box */}
-                            <div className={`w-full border-[1.5px] border-zinc-950 bg-white text-center shadow-3xs transition-all duration-300 ${bankDetailsPaddingClass}`}>
+                            <div className={`w-full border-[1.5px] border-[#09090b] bg-white text-center shadow-3xs transition-all duration-300 ${bankDetailsPaddingClass}`}>
                               <p className="font-semibold italic text-[11px] text-zinc-900 select-text leading-relaxed">
                                 Please kindly make payment in <span className="font-black uppercase">CASH</span> or <span className="font-black uppercase">Bank Transfer</span> to:
                               </p>
@@ -2159,7 +2158,7 @@ export default function App() {
                                 </p>
                               ))}
                             </div>
-                            <div className={`w-[70%] mx-auto text-center bg-[#FEFAEB] border-[1.5px] border-amber-300 py-2.5 rounded-none text-[12px] font-black text-amber-950 uppercase tracking-widest select-none shadow-3xs transition-all duration-300 ${thankYouMarginClass}`}>
+                            <div className={`w-[70%] mx-auto text-center bg-[#FEFAEB] border-[1.5px] border-[#fcd34d] py-2.5 rounded-none text-[12px] font-black text-amber-950 uppercase tracking-widest select-none shadow-3xs transition-all duration-300 ${thankYouMarginClass}`}>
                               Thank You
                             </div>
                           </div>
