@@ -175,10 +175,13 @@ export default function App() {
 
   // Corporate Branding State & Persistent Parameters
   const [brCompanyName, setBrCompanyName] = useState(() => {
-    return localStorage.getItem("excel_app_companyName") || "Parkvan Calibration (Pvt) Ltd";
+    return localStorage.getItem("excel_app_companyName") || "Parkvan Calibration™ (Pvt) Ltd";
   });
   const [brCompanyTagline, setBrCompanyTagline] = useState(() => {
     return localStorage.getItem("excel_app_companyTagline") || "PRECISION. RELIABILITY. COMPLIANCE.";
+  });
+  const [brCompanyFooterTagline, setBrCompanyFooterTagline] = useState(() => {
+    return localStorage.getItem("excel_app_companyFooterTagline") || "YOUR TRUSTED WETSTOCK & CALIBRATION PARTNER™";
   });
   const [brCompanyAddress, setBrCompanyAddress] = useState(() => {
     return localStorage.getItem("excel_app_companyAddress") || "119 Harare Drive, Hatfield, HARARE";
@@ -226,6 +229,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem("excel_app_companyTagline", brCompanyTagline);
   }, [brCompanyTagline]);
+
+  useEffect(() => {
+    localStorage.setItem("excel_app_companyFooterTagline", brCompanyFooterTagline);
+  }, [brCompanyFooterTagline]);
 
   useEffect(() => {
     localStorage.setItem("excel_app_companyAddress", brCompanyAddress);
@@ -1471,8 +1478,42 @@ export default function App() {
                   value={brCompanyName}
                   onChange={(e) => setBrCompanyName(e.target.value)}
                   className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500 font-bold"
-                  placeholder="Parkvan Calibration (Pvt) Ltd"
+                  placeholder="Parkvan Calibration™ (Pvt) Ltd"
                 />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-slate-400 font-medium font-sans">Bottom Footer Slogan</label>
+                <input 
+                  type="text"
+                  value={brCompanyFooterTagline}
+                  onChange={(e) => setBrCompanyFooterTagline(e.target.value)}
+                  className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500 text-xs font-semibold"
+                  placeholder="YOUR TRUSTED WETSTOCK & CALIBRATION PARTNER™"
+                />
+                
+                <div className="mt-1.5 p-2.5 bg-slate-950/80 border border-slate-850 rounded-lg space-y-1">
+                  <span className="text-[10px] text-teal-400 font-mono uppercase tracking-wider block font-bold">Suggested Professional Copy (Click to apply):</span>
+                  <div className="flex flex-col gap-1">
+                    {[
+                      "YOUR TRUSTED WETSTOCK & CALIBRATION PARTNER™",
+                      "CERTIFIED FUEL METROLOGY & COMPLIANCE SOLUTIONS™",
+                      "PRECISION METROLOGY, CALIBRATION & WETSTOCK AUDIT EXPERTS™",
+                      "AFRICA'S STANDARD FOR CALIBRATION & FUEL VERIFICATION™",
+                      "PREMIUM FUEL DISPENSERS, CALIBRATION & MAINTENANCE™"
+                    ].map((tagline, idx) => (
+                      <button 
+                        key={idx}
+                        type="button" 
+                        onClick={() => setBrCompanyFooterTagline(tagline)}
+                        className="text-[10px] text-zinc-400 hover:text-white transition-colors text-left bg-transparent border-none p-0 flex items-start gap-1 cursor-pointer font-sans"
+                      >
+                        <span className="text-teal-400 font-bold font-mono">»</span>
+                        <span className="hover:underline">{tagline}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               <div className="flex flex-col gap-1">
@@ -2183,7 +2224,7 @@ export default function App() {
                     {/* Footer Contact Slogans Row */}
                     <div className="w-full flex justify-between items-center text-[10px] font-sans font-semibold select-none text-zinc-650">
                       <span className="text-[#E65100] font-black uppercase tracking-wider text-[10.5px]">
-                        YOUR WETSTOCK ACCOUNTING PARTNER
+                        {brCompanyFooterTagline}
                       </span>
                       
                       <span className="font-mono font-bold select-text">
