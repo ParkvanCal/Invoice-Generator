@@ -324,48 +324,50 @@ export default function App() {
     
     setIsGeneratingPDF(true);
     
-    // Use high scale for crisp fonts & tables
-    html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: '#ffffff',
-      logging: false
-    }).then(canvas => {
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
+    // Wait for React to re-render the DOM with any PDF-only styling (no borders) and custom footers
+    setTimeout(() => {
+      html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false
+      }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4'
+        });
+        
+        let imgWidth = 210; // A4 size width in mm
+        const pageHeight = 297; // A4 size height in mm
+        let imgHeight = (canvas.height * imgWidth) / canvas.width;
+        
+        // Since the invoice/quote is customized to be a perfect visual single-page letterhead,
+        // if the canvas aspect ratio makes it exceed 297 mm, we automatically downscale the image
+        // slightly so it fits perfectly on a single page, centering it horizontally.
+        let positionX = 0;
+        let positionY = 0;
+        
+        if (imgHeight > pageHeight) {
+          const scaleFactor = pageHeight / imgHeight;
+          imgHeight = pageHeight;
+          imgWidth = imgWidth * scaleFactor;
+          positionX = (210 - imgWidth) / 2; // Center horizontally on the A4 canvas
+        }
+        
+        pdf.addImage(imgData, 'PNG', positionX, positionY, imgWidth, imgHeight);
+        
+        const cleanClient = (sheetDoc.details.clientName || 'CLIENT').replace(/[^a-zA-Z0-9]/g, '_');
+        const fileName = `${sheetDoc.details.jobID || 'DOCUMENT'}_${cleanClient}_${sheetDoc.type}.pdf`;
+        pdf.save(fileName);
+        setIsGeneratingPDF(false);
+      }).catch(err => {
+        console.error(err);
+        setIsGeneratingPDF(false);
+        alert("Error generating PDF document. Please try again.");
       });
-      
-      let imgWidth = 210; // A4 size width in mm
-      const pageHeight = 297; // A4 size height in mm
-      let imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
-      // Since the invoice/quote is customized to be a perfect visual single-page letterhead,
-      // if the canvas aspect ratio makes it exceed 297 mm, we automatically downscale the image
-      // slightly so it fits perfectly on a single page, centering it horizontally.
-      let positionX = 0;
-      let positionY = 0;
-      
-      if (imgHeight > pageHeight) {
-        const scaleFactor = pageHeight / imgHeight;
-        imgHeight = pageHeight;
-        imgWidth = imgWidth * scaleFactor;
-        positionX = (210 - imgWidth) / 2; // Center horizontally on the A4 canvas
-      }
-      
-      pdf.addImage(imgData, 'PNG', positionX, positionY, imgWidth, imgHeight);
-      
-      const cleanClient = (sheetDoc.details.clientName || 'CLIENT').replace(/[^a-zA-Z0-9]/g, '_');
-      const fileName = `${sheetDoc.details.jobID || 'DOCUMENT'}_${cleanClient}_${sheetDoc.type}.pdf`;
-      pdf.save(fileName);
-      setIsGeneratingPDF(false);
-    }).catch(err => {
-      console.error(err);
-      setIsGeneratingPDF(false);
-      alert("Error generating PDF document. Please try again.");
-    });
+    }, 150); // 150ms timeout is perfect for modern browsers
   };
 
   // Format utility matching standard Excel accounting
@@ -1649,7 +1651,11 @@ export default function App() {
             <div 
               ref={sheetRef} 
               id="quote-print-canvas"
-              className={`min-w-[660px] bg-white text-zinc-900 rounded border border-slate-300 relative mx-auto transition-all ${
+              className={`min-w-[660px] bg-white text-zinc-900 relative mx-auto transition-all ${
+                isGeneratingPDF 
+                  ? 'border-none shadow-none rounded-none' 
+                  : 'rounded border border-slate-300 shadow-sm'
+              } ${
                 excelStyleMode === 'excel' 
                   ? 'p-3 pt-6 print:p-0' 
                   : isUltraCrowded 
@@ -2249,6 +2255,13 @@ export default function App() {
                         <span className="text-zinc-400 font-bold">Page 1 of 1</span>
                       </div>
                     </div>
+                  </div>
+                )}
+
+                {/* Securely render custom rebranded footer inside canvas during high-fidelity PDF capture only */}
+                {isGeneratingPDF && (
+                  <div className="absolute bottom-2.5 left-6 font-sans text-[8px] font-semibold text-zinc-400 select-all lowercase tracking-wider">
+                    https://parkvan-calibration.co.zw/
                   </div>
                 )}
 
