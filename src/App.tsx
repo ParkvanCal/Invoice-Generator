@@ -262,6 +262,31 @@ export default function App() {
     localStorage.setItem("excel_app_quote_comments_v1", JSON.stringify(quoteComments));
   }, [quoteComments]);
 
+  // Dynamic Document Title for OS Print default naming system
+  useEffect(() => {
+    let originalTitle = document.title;
+
+    const handleBeforePrint = () => {
+      originalTitle = document.title;
+      const cleanClient = (sheetDoc.details.clientName || 'CLIENT').replace(/[^a-zA-Z0-9]/g, '_');
+      const docId = sheetDoc.details.jobID || 'DOCUMENT';
+      const docType = sheetDoc.type || 'DOCUMENT';
+      document.title = `${docId}_${cleanClient}_${docType}`;
+    };
+
+    const handleAfterPrint = () => {
+      document.title = originalTitle;
+    };
+
+    window.addEventListener('beforeprint', handleBeforePrint);
+    window.addEventListener('afterprint', handleAfterPrint);
+
+    return () => {
+      window.removeEventListener('beforeprint', handleBeforePrint);
+      window.removeEventListener('afterprint', handleAfterPrint);
+    };
+  }, [sheetDoc.details.clientName, sheetDoc.details.jobID, sheetDoc.type]);
+
   const [dragOver, setDragOver] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
