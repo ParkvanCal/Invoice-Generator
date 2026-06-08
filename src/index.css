@@ -35,10 +35,16 @@ textarea {
 }
 
 /* Perfect print layout stylesheets. Isolates the Excel sheet template entirely onto clean pages. */
+@page {
+  size: portrait;
+  margin: 6mm 8mm 6mm 8mm; /* Balances margins on real paper / PDF output */
+}
+
 @media print {
   html, body {
     background-color: #ffffff !important;
-    color: #1e293b !important;
+    background: #ffffff !important;
+    color: #09090b !important;
     margin: 0 !important;
     padding: 0 !important;
     -webkit-print-color-adjust: exact !important;
@@ -51,22 +57,35 @@ textarea {
     print-color-adjust: exact !important;
   }
 
-  /* Hide entire page workspace panels: header tabs, creator form sidebar, WYSIWYG control subbar */
+  /* Absolute hiding of non-invoice visual layers */
   header,
   #hdr-main,
-  section:first-of-type,
+  footer,
+  aside,
   nav,
-  .print\:hidden,
   button,
   select,
-  div.absolute.top-2.left-2,
-  div.flex.border-b.border-dashed.border-slate-200,
-  /* Hide the top panel container buttons and WYSIWYG headers on actual paper print */
-  div.flex.flex-col.sm\:flex-row.justify-between.items-start {
+  .print\:hidden {
     display: none !important;
   }
 
-  /* Override the bento-gird layout structure for single columns */
+  /* Hide left form sidebar entirely */
+  main > section:first-of-type {
+    display: none !important;
+  }
+
+  /* Hide sibling helper cards and footers */
+  main ~ div,
+  main ~ footer {
+    display: none !important;
+  }
+
+  /* Within the preview section, hide top segmented toggles and print buttons */
+  #wysiwyg-preview-section > *:not(#excel-grid-container) {
+    display: none !important;
+  }
+
+  /* Expand main and the preview container to inherit absolute full printed page width */
   main {
     display: block !important;
     width: 100% !important;
@@ -75,7 +94,7 @@ textarea {
     margin: 0 !important;
   }
 
-  section.lg\:col-span-7 {
+  #wysiwyg-preview-section {
     display: block !important;
     width: 100% !important;
     max-width: 100% !important;
@@ -83,24 +102,32 @@ textarea {
     margin: 0 !important;
   }
 
-  /* Eliminate deep dark grid containers & frames */
-  .bg-slate-900 {
+  /* Erase container board lines & shadow frames for standard PDF render alignment */
+  #excel-grid-container {
+    display: block !important;
     background: transparent !important;
+    background-color: transparent !important;
     border: none !important;
     box-shadow: none !important;
     padding: 0 !important;
     margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 
-  /* Target the printable card explicitly by its unique ID for accurate boundaries */
+  /* Target the printable card explicitly: prevent breaks and center layout constraints */
   #quote-print-canvas {
     background-color: #ffffff !important;
-    color: #0f172a !important;
-    margin: 0px auto !important;
+    color: #09090b !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
     min-width: 100% !important;
     box-shadow: none !important;
+    border: none !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
     min-height: auto !important;
   }
 

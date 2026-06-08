@@ -1520,7 +1520,7 @@ export default function App() {
         </section>
 
         {/* Right Side: High Fidelity Grid Sheet Render (WYSIWYG) */}
-        <section className="lg:col-span-7 flex flex-col gap-3">
+        <section id="wysiwyg-preview-section" className="lg:col-span-7 flex flex-col gap-3">
           
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 gap-3 text-xs">
             <div className="flex items-center gap-4">
@@ -1586,7 +1586,7 @@ export default function App() {
           </div>
 
           {/* Realistic Excel Spreadsheet Grid Container */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 md:p-6 overflow-x-auto shadow-xl print:p-0 print:bg-white print:border-none">
+          <div id="excel-grid-container" className="bg-slate-900 border border-slate-800 rounded-xl p-4 md:p-6 overflow-x-auto shadow-xl print:p-0 print:bg-white print:border-none">
             
             <div 
               ref={sheetRef} 
@@ -2199,7 +2199,7 @@ export default function App() {
 
           </div>
 
-          <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl text-xs space-y-1">
+          <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl text-xs space-y-1 print:hidden">
             <span className="font-bold text-white block">💡 Dynamic Simulation Mechanics:</span>
             <p className="text-slate-400">
               Select <strong>"2. Finalize Invoice"</strong>, input any Order Identifier number (simulating VBA prompt Box), and watch the system instantly pull active lines, resolve metadata parameters, and perform the proper sheet range division sum arithmetic!
@@ -2210,7 +2210,7 @@ export default function App() {
 
       </main>
 
-      <footer className="bg-slate-900/60 border-t border-slate-800/80 p-4 text-center text-xs text-slate-500 mt-20 font-mono">
+      <footer className="bg-slate-900/60 border-t border-slate-800/80 p-4 text-center text-xs text-slate-500 mt-20 font-mono print:hidden">
         Quotation & Invoicing Studio • Simulated Desktop Environment
       </footer>
 
