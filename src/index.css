@@ -47,6 +47,8 @@ textarea {
     color: #09090b !important;
     margin: 0 !important;
     padding: 0 !important;
+    height: 100% !important;
+    min-height: 100% !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
@@ -85,26 +87,39 @@ textarea {
     display: none !important;
   }
 
-  /* Expand main and the preview container to inherit absolute full printed page width */
+  /* Set up full-screen height flex alignment on main to center invoice vertically and horizontally on page */
   main {
-    display: block !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
     width: 100% !important;
+    height: 100vh !important;
     max-width: 100% !important;
     padding: 0 !important;
     margin: 0 !important;
+    box-sizing: border-box !important;
   }
 
   #wysiwyg-preview-section {
-    display: block !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
     width: 100% !important;
+    height: 100% !important;
     max-width: 100% !important;
     padding: 0 !important;
     margin: 0 !important;
+    box-sizing: border-box !important;
   }
 
   /* Erase container board lines & shadow frames for standard PDF render alignment */
   #excel-grid-container {
-    display: block !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
     background: transparent !important;
     background-color: transparent !important;
     border: none !important;
@@ -112,14 +127,16 @@ textarea {
     padding: 0 !important;
     margin: 0 !important;
     width: 100% !important;
+    height: 100% !important;
     max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   /* Target the printable card explicitly: prevent breaks and center layout constraints */
   #quote-print-canvas {
     background-color: #ffffff !important;
     color: #09090b !important;
-    margin: 0 auto !important;
+    margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
     max-width: 100% !important;

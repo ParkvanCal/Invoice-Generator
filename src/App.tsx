@@ -1724,8 +1724,11 @@ export default function App() {
 
                 {/* Stepped Horizontal Divider Box Banner */}
                 <div className={`relative w-full select-none transition-all ${bannerHeightClass}`}>
-                  <div className="absolute left-0 bottom-[1.5px] right-[180px] h-[3.5px] bg-[#0A2E5C]"></div>
-                  <div className="absolute right-0 bottom-0 bg-white border-[3px] border-[#0A2E5C] border-b-0 px-8 flex items-center justify-center min-w-[200px] h-full" style={{ zIndex: 10 }}>
+                  {/* Left horizontal line: height matches the 3px border thickness of the box, bottom matches bottom-0 of the box */}
+                  <div className="absolute left-0 bottom-0 right-[198px] h-[3px] bg-[#0A2E5C]"></div>
+                  
+                  {/* Right box: width is exactly 200px, bottom-0, border-3px (border-b-0), matching the left line perfect alignment */}
+                  <div className="absolute right-0 bottom-0 bg-white border-[3px] border-[#0A2E5C] border-b-0 px-8 flex items-center justify-center w-[200px] h-full" style={{ zIndex: 10 }}>
                     <span 
                       className={`font-sans font-black uppercase tracking-wider text-zinc-950 transition-all ${bannerFontSizeClass}`}
                       style={{ color: '#09090b' }}
