@@ -100,7 +100,6 @@ textarea {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 100% !important;
-    border: none !important;
     box-shadow: none !important;
     min-height: auto !important;
   }
@@ -109,5 +108,95 @@ textarea {
     color: #dc2626 !important;
   }
 }
+
+/* Bulletproof Flat Border Styles to resolve Tailwind v4 custom property compilation bugs */
+#quote-print-canvas {
+  border: 1px solid #cbd5e1 !important;
+}
+
+#quote-print-canvas .border-zinc-950,
+#quote-print-canvas .border-\[\#09090b\] {
+  border-color: #09090b !important;
+}
+
+#quote-print-canvas .border-zinc-300,
+#quote-print-canvas .border-\[\#cbd5e1\] {
+  border-color: #cbd5e1 !important;
+}
+
+#quote-print-canvas .border-zinc-400,
+#quote-print-canvas .border-\[\#a1a1aa\] {
+  border-color: #a1a1aa !important;
+}
+
+#quote-print-canvas .border-zinc-200,
+#quote-print-canvas .border-\[\#e4e4e7\] {
+  border-color: #e4e4e7 !important;
+}
+
+#quote-print-canvas .border-\[\#d4d4d8\] {
+  border-color: #d4d4d8 !important;
+}
+
+#quote-print-canvas .border-b-\[1\.5px\] {
+  border-bottom-width: 1.5px !important;
+  border-bottom-style: solid !important;
+}
+
+#quote-print-canvas .border-b-\[2\.5px\] {
+  border-bottom-width: 2.5px !important;
+  border-bottom-style: solid !important;
+}
+
+#quote-print-canvas .border-b-\[2px\] {
+  border-bottom-width: 2px !important;
+  border-bottom-style: solid !important;
+}
+
+#quote-print-canvas .border-\[1\.5px\] {
+  border-width: 1.5px !important;
+  border-style: solid !important;
+}
+
+#quote-print-canvas .border-\[2px\] {
+  border-width: 2px !important;
+  border-style: solid !important;
+}
+
+#quote-print-canvas .border-t-\[2\.5px\] {
+  border-top-width: 2.5px !important;
+  border-top-style: solid !important;
+}
+
+#quote-print-canvas .border-l-\[2\.5px\] {
+  border-left-width: 2.5px !important;
+  border-left-style: solid !important;
+}
+
+#quote-print-canvas .border-r-\[2\.5px\] {
+  border-right-width: 2.5px !important;
+  border-right-style: solid !important;
+}
+
+#quote-print-canvas .border-r {
+  border-right-width: 1px !important;
+  border-right-style: solid !important;
+}
+
+#quote-print-canvas .border-l {
+  border-left-width: 1px !important;
+  border-left-style: solid !important;
+}
+
+#quote-print-canvas .border-t {
+  border-top-width: 1px !important;
+  border-top-style: solid !important;
+}
+
+#quote-print-canvas .border-b {
+  border-bottom-width: 1px !important;
+  border-bottom-style: solid !important;
+}
+
 
 

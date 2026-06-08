@@ -1591,7 +1591,7 @@ export default function App() {
             <div 
               ref={sheetRef} 
               id="quote-print-canvas"
-              className={`min-w-[660px] bg-white text-zinc-900 rounded border border-slate-300 relative mx-auto print:shadow-none print:border-none transition-all ${
+              className={`min-w-[660px] bg-white text-zinc-900 rounded border border-slate-300 relative mx-auto transition-all ${
                 excelStyleMode === 'excel' 
                   ? 'p-3 pt-6 print:p-0' 
                   : isUltraCrowded 
