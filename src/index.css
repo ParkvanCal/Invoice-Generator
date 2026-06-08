@@ -37,7 +37,7 @@ textarea {
 /* Perfect print layout stylesheets. Isolates the Excel sheet template entirely onto clean pages. */
 @page {
   size: portrait;
-  margin: 0; /* Removing margins forces the browser to suppress default headers and footers (like URL / date / title in corners). */
+  margin: 0 !important; /* Hides default print headers and footers (date, title, URL, page number) */
 }
 
 @media print {
@@ -139,17 +139,17 @@ textarea {
     justify-content: space-between !important;
     background-color: #ffffff !important;
     color: #09090b !important;
-    margin: 0 !important;
-    padding: 10mm 12mm !important; /* Elegant simulated page margins on physical sheet */
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 100% !important;
+    margin: 12mm 15mm 12mm 15mm !important; /* Perfect Margins for printed page */
+    padding: 0 !important;
+    width: calc(100% - 30mm) !important;
+    max-width: calc(100% - 30mm) !important;
+    min-width: calc(100% - 30mm) !important;
+    height: calc(100% - 24mm) !important;
+    min-height: calc(100% - 24mm) !important;
     box-shadow: none !important;
     border: none !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
-    height: 100% !important;
-    min-height: 100% !important;
     box-sizing: border-box !important;
   }
 

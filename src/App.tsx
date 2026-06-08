@@ -2227,19 +2227,9 @@ export default function App() {
                         {brCompanyFooterTagline}
                       </span>
                       
-                      <div className="flex flex-col items-center">
-                        <a 
-                          href="https://parkvan-calibration.co.zw/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="font-sans font-black text-[#0A2E5C] text-[11px] hover:underline"
-                        >
-                          https://parkvan-calibration.co.zw/
-                        </a>
-                        <span className="font-mono text-[9px] text-zinc-500 font-bold select-text mt-0.5">
-                          {brCompanyEmail || 'info@parkvan-calibration.co.zw'}
-                        </span>
-                      </div>
+                      <span className="font-mono font-bold select-text">
+                        {brCompanyEmail || 'sales@parkvancalibration.co.zw'}
+                      </span>
 
                       <div className="flex items-center gap-4 font-mono font-bold">
                         <span className="select-text">{brCompanyPhone || '+263 77 241 3600'}</span>
@@ -2251,7 +2241,10 @@ export default function App() {
 
               </div>
 
-
+              {/* Print-only custom URL footer simulating native print footer but with rebranded custom domain */}
+              <div className="hidden print:block absolute -bottom-[22px] left-2 text-[8px] font-sans text-zinc-400 select-all font-semibold uppercase tracking-wider">
+                https://parkvan-calibration.co.zw/
+              </div>
 
             </div>
 
@@ -2268,17 +2261,8 @@ export default function App() {
 
       </main>
 
-      <footer className="bg-slate-900/60 border-t border-slate-800/80 p-6 text-center text-xs text-slate-400 mt-20 font-sans print:hidden flex flex-col sm:flex-row items-center justify-center gap-2">
-        <span>© 2026 Parkvan Calibration™ (Pvt) Ltd. All rights reserved.</span>
-        <span className="hidden sm:inline text-slate-600">•</span>
-        <a 
-          href="https://parkvan-calibration.co.zw/" 
-          target="_blank" 
-          rel="noopener noreferrer" 
-          className="text-teal-400 hover:text-teal-300 font-bold hover:underline"
-        >
-          https://parkvan-calibration.co.zw/
-        </a>
+      <footer className="bg-slate-900/60 border-t border-slate-800/80 p-4 text-center text-xs text-slate-500 mt-20 font-mono print:hidden">
+        Quotation & Invoicing Studio • Simulated Desktop Environment
       </footer>
 
     </div>
