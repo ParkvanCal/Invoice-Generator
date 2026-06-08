@@ -37,7 +37,7 @@ textarea {
 /* Perfect print layout stylesheets. Isolates the Excel sheet template entirely onto clean pages. */
 @page {
   size: portrait;
-  margin: 10mm; /* Symmetrical margin all around - top, bottom, left, and right gaps are equal */
+  margin: 0; /* Removing margins forces the browser to suppress default headers and footers (like URL / date / title in corners). */
 }
 
 @media print {
@@ -140,7 +140,7 @@ textarea {
     background-color: #ffffff !important;
     color: #09090b !important;
     margin: 0 !important;
-    padding: 0 !important;
+    padding: 10mm 12mm !important; /* Elegant simulated page margins on physical sheet */
     width: 100% !important;
     max-width: 100% !important;
     min-width: 100% !important;
