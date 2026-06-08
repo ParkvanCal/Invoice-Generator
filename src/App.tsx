@@ -2241,11 +2241,6 @@ export default function App() {
 
               </div>
 
-              {/* Print-only custom URL footer simulating native print footer but with rebranded custom domain */}
-              <div className="hidden print:block absolute -bottom-[22px] left-2 text-[8px] font-sans text-zinc-400 select-all font-semibold uppercase tracking-wider">
-                https://parkvan-calibration.co.zw/
-              </div>
-
             </div>
 
           </div>
