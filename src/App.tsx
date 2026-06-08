@@ -1590,6 +1590,7 @@ export default function App() {
             
             <div 
               ref={sheetRef} 
+              id="quote-print-canvas"
               className={`min-w-[660px] bg-white text-zinc-900 rounded border border-slate-300 relative mx-auto print:shadow-none print:border-none print:p-0 transition-all ${
                 excelStyleMode === 'excel' 
                   ? 'p-3 pt-6' 
@@ -1730,12 +1731,11 @@ export default function App() {
                     </span>
                   </div>
                 </div>
-
-                {/* 3. Customer Info Cards Layout Row */}
+                            {/* 3. Customer Info Cards Layout Row */}
                 {excelStyleMode === 'clean' ? (
                   <div className={`grid grid-cols-12 w-full select-text font-sans transition-all ${billingBlockMarginClass}`}>
                     {/* Left Side: Customer Info Block */}
-                    <div className="col-span-12 md:col-span-7 flex flex-col border-[1.5px] border-zinc-950 rounded-none bg-white">
+                    <div className="col-span-7 flex flex-col border-[1.5px] border-zinc-950 rounded-none bg-white">
                       {/* Header bar */}
                       <div className="bg-[#0A2E5C] text-white px-3 py-1 text-[10.5px] font-black uppercase tracking-wider rounded-none">
                         Customer Details
@@ -1749,8 +1749,8 @@ export default function App() {
                         </div>
                         
                         <div className="flex border-b border-zinc-300 items-center justify-start transition-all duration-300" style={{ minHeight: isVeryCrowded ? '24px' : '30px' }}>
-                          <span className="w-24 pl-3 font-bold text-zinc-650 uppercase tracking-tight text-[9px] select-none border-r border-zinc-300 flex items-center bg-zinc-50/70 h-full">Address</span>
-                          <span className={`flex-1 pl-4 text-zinc-800 font-extrabold select-all ${isVeryCrowded ? 'text-[11px]' : 'text-[11.5px]'}`}>{sheetDoc.details.addr}</span>
+                          <span className="w-24 pl-3 font-bold text-zinc-655 uppercase tracking-tight text-[9px] select-none border-r border-zinc-300 flex items-center bg-zinc-50/70 h-full">Address</span>
+                          <span className={`flex-1 pl-4 text-zinc-805 font-extrabold select-all ${isVeryCrowded ? 'text-[11px]' : 'text-[11.5px]'}`}>{sheetDoc.details.addr}</span>
                         </div>
                         
                         <div className="flex border-b border-zinc-300 items-center justify-start transition-all duration-300" style={{ minHeight: isVeryCrowded ? '24px' : '30px' }}>
@@ -1766,7 +1766,7 @@ export default function App() {
                     </div>
 
                     {/* Right Side: Misc Block */}
-                    <div className="col-span-12 md:col-span-5 flex flex-col border-[1.5px] border-zinc-950 rounded-none bg-white">
+                    <div className="col-span-5 flex flex-col border-[1.5px] border-zinc-950 rounded-none bg-white">
                       {/* Header bar */}
                       <div className="bg-[#0A2E5C] text-white px-3 py-1 text-[10.5px] font-black uppercase tracking-wider rounded-none">
                         Document Metadata
@@ -1800,7 +1800,7 @@ export default function App() {
                   <div className="grid grid-cols-12 gap-6 w-full mt-2">
                     
                     {/* Left Side: Customer Info Box */}
-                    <div className="col-span-12 md:col-span-7 relative border-t-[3.5px] border-l-[3.5px] border-[#0A2E5C] bg-[#f8fafc]/45 p-4 pt-5 text-xs font-sans rounded-tl shadow-xs text-left">
+                    <div className="col-span-7 relative border-t-[3.5px] border-l-[3.5px] border-[#0A2E5C] bg-[#f8fafc]/45 p-4 pt-5 text-xs font-sans rounded-tl shadow-xs text-left">
                       <div className="absolute -top-[11px] left-2.5 bg-white px-2.5 text-[#0A2E5C] text-[10px] font-black uppercase tracking-wider leading-none">
                         Customer
                       </div>
@@ -1827,7 +1827,7 @@ export default function App() {
                     </div>
 
                     {/* Right Side: Document parameters Box */}
-                    <div className="col-span-12 md:col-span-5 relative border-t-[3.5px] border-l-[3.5px] border-[#0A2E5C] bg-[#f8fafc]/45 p-4 pt-5 text-xs font-sans rounded-tl shadow-xs text-left">
+                    <div className="col-span-5 relative border-t-[3.5px] border-l-[3.5px] border-[#0A2E5C] bg-[#f8fafc]/45 p-4 pt-5 text-xs font-sans rounded-tl shadow-xs text-left">
                       <div className="absolute -top-[11px] left-2.5 bg-white px-2.5 text-[#0A2E5C] text-[10px] font-black uppercase tracking-wider leading-none">
                         Misc
                       </div>

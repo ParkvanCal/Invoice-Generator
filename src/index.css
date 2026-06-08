@@ -45,6 +45,12 @@ textarea {
     print-color-adjust: exact !important;
   }
 
+  /* Force print background graphics for colors to load beautifully */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   /* Hide entire page workspace panels: header tabs, creator form sidebar, WYSIWYG control subbar */
   header,
   #hdr-main,
@@ -54,7 +60,9 @@ textarea {
   button,
   select,
   div.absolute.top-2.left-2,
-  div.flex.border-b.border-dashed.border-slate-200 {
+  div.flex.border-b.border-dashed.border-slate-200,
+  /* Hide the top panel container buttons and WYSIWYG headers on actual paper print */
+  div.flex.flex-col.sm\:flex-row.justify-between.items-start {
     display: none !important;
   }
 
@@ -77,29 +85,25 @@ textarea {
 
   /* Eliminate deep dark grid containers & frames */
   .bg-slate-900 {
-    background: #ffffff !important;
+    background: transparent !important;
     border: none !important;
     box-shadow: none !important;
     padding: 0 !important;
     margin: 0 !important;
   }
 
-  /* Target the Excel sheet white card container */
-  .bg-white {
+  /* Target the printable card explicitly by its unique ID for accurate boundaries */
+  #quote-print-canvas {
     background-color: #ffffff !important;
     color: #0f172a !important;
-    padding: 0 !important;
-    margin: 0 !important;
+    padding: 0px !important;
+    margin: 0px auto !important;
     width: 100% !important;
     max-width: 100% !important;
+    min-width: 100% !important;
     border: none !important;
     box-shadow: none !important;
-  }
-
-  div[style*="minHeight"] {
     min-height: auto !important;
-    padding: 10px !important;
-    margin: 0 !important;
   }
 
   .text-red-print {
