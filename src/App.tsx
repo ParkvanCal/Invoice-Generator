@@ -570,13 +570,17 @@ export default function App() {
   const grandTotalResult = doubleSumOfRange / 2;
 
   // Progressive Single-Page layout adaptive spacing parameters
+  const isInvoice = sheetDoc.type !== 'QUOTE';
   const itemsCount = sheetDoc.items.length;
-  const isCrowded = itemsCount > 6;
-  const isVeryCrowded = itemsCount > 10;
-  const isUltraCrowded = itemsCount > 13;
+  const isCrowded = itemsCount > 6 || (isInvoice && itemsCount > 4);
+  const isVeryCrowded = itemsCount > 10 || (isInvoice && itemsCount > 7);
+  const isUltraCrowded = itemsCount > 13 || (isInvoice && itemsCount > 10);
   
   // Total target rows to render to perfectly fill exactly one page:
-  const targetTotalRows = Math.max(12, itemsCount);
+  // Since Invoice view includes a larger and detailed accounting footer, we use a smaller rows ceiling (6) so it never spills over.
+  const targetTotalRows = isInvoice 
+    ? Math.max(6, itemsCount) 
+    : Math.max(12, itemsCount);
 
   // Row and text sizing adaptivity
   const rowPaddingClass = isUltraCrowded 
@@ -2035,7 +2039,7 @@ export default function App() {
                           </div>
                         </>
                       ) : (
-                        <div className="w-full flex text-right mt-6 mb-4">
+                        <div className={`w-full flex text-right ${isVeryCrowded ? 'mt-1.5 mb-1' : isCrowded ? 'mt-3 mb-2' : 'mt-6 mb-4'}`}>
                           <div className="w-[10%]"></div>
                           <div className="w-[55%]"></div>
                           <div className="w-[17%] text-right pr-4 font-black text-zinc-900 uppercase tracking-widest flex items-center justify-end text-[12px] select-none">TOTAL DUE</div>
@@ -2049,7 +2053,7 @@ export default function App() {
                 )}
 
                 {/* ROW 33 to 35: Footer notes and signature spaces */}
-                <div className={`flex w-full items-stretch ${excelStyleMode === 'excel' ? 'border-l border-b border-[#cbd5e1]' : 'mt-8 pt-6 border-t border-dashed border-[#e4e4e7]'}`} id="excel-row-33">
+                <div className={`flex w-full items-stretch ${excelStyleMode === 'excel' ? 'border-l border-b border-[#cbd5e1]' : isVeryCrowded ? 'mt-2 pt-2 border-t border-dashed border-[#e4e4e7]' : isCrowded ? 'mt-4 pt-4 border-t border-dashed border-[#e4e4e7]' : 'mt-8 pt-6 border-t border-dashed border-[#e4e4e7]'}`} id="excel-row-33">
                   {excelStyleMode === 'excel' && (
                     <div className="w-8 flex-shrink-0 bg-[#f8f9fa] border-r border-b border-[#cbd5e1] font-mono text-[9px] text-zinc-500 flex items-center justify-center font-bold select-none py-1 print:hidden">
                       33
