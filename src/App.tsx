@@ -2268,8 +2268,17 @@ export default function App() {
 
       </main>
 
-      <footer className="bg-slate-900/60 border-t border-slate-800/80 p-4 text-center text-xs text-slate-500 mt-20 font-mono print:hidden">
-        Quotation & Invoicing Studio • Simulated Desktop Environment
+      <footer className="bg-slate-900/60 border-t border-slate-800/80 p-6 text-center text-xs text-slate-400 mt-20 font-sans print:hidden flex flex-col sm:flex-row items-center justify-center gap-2">
+        <span>© 2026 Parkvan Calibration™ (Pvt) Ltd. All rights reserved.</span>
+        <span className="hidden sm:inline text-slate-600">•</span>
+        <a 
+          href="https://parkvan-calibration.co.zw/" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="text-teal-400 hover:text-teal-300 font-bold hover:underline"
+        >
+          https://parkvan-calibration.co.zw/
+        </a>
       </footer>
 
     </div>
