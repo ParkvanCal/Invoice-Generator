@@ -28,9 +28,11 @@ import { motion, AnimatePresence } from "motion/react";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import { JobBookEntry, DocumentDetails, LineItem, DocumentState } from "./types";
+// @ts-ignore
+import companyLogoImage from "./assets/images/company_logo_1780762745301.png";
 
 export default function App() {
-  const companyLogo = "/src/assets/images/company_logo_1780762745301.png";
+  const companyLogo = companyLogoImage;
 
   // Navigation & View Tab
   const [activeTab, setActiveTab] = useState<'quote' | 'invoice' | 'job_book' | 'design_docs'>('quote');
@@ -206,7 +208,11 @@ export default function App() {
     return localStorage.getItem("excel_app_companyPhone") || "0778 924 209";
   });
   const [brCompanyLogo, setBrCompanyLogo] = useState(() => {
-    return localStorage.getItem("excel_app_companyLogo") || companyLogo;
+    const saved = localStorage.getItem("excel_app_companyLogo");
+    if (saved === "/src/assets/images/company_logo_1780762745301.png") {
+      return companyLogo;
+    }
+    return saved || companyLogo;
   });
   const [brShowLogo, setBrShowLogo] = useState(() => {
     const saved = localStorage.getItem("excel_app_showLogo");
@@ -468,10 +474,8 @@ export default function App() {
       items: [...activeQuoteItems]
     });
 
-    // Real high-fidelity PDF generation & trigger
-    setTimeout(() => {
-      handleExportPDF();
-    }, 350);
+    // Alert with success confirmation
+    alert(`Quotation saved and logged to Job Book successfully under Reference: ${generatedID}`);
   };
 
   // Add Item to Quotation Active Draft
