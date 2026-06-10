@@ -19,7 +19,10 @@ import {
   TrendingUp,
   Download,
   Search,
-  Upload
+  Upload,
+  Pencil,
+  Check,
+  X
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { jsPDF } from "jspdf";
@@ -138,6 +141,16 @@ export default function App() {
   const [newItemQty, setNewItemQty] = useState<number>(1);
   const [newItemDesc, setNewItemDesc] = useState<string>("");
   const [newItemPrice, setNewItemPrice] = useState<number>(0);
+
+  // States for editing active line items inline
+  const [editingLineItemId, setEditingLineItemId] = useState<string | null>(null);
+  const [editingLineItemQty, setEditingLineItemQty] = useState<number>(1);
+  const [editingLineItemDesc, setEditingLineItemDesc] = useState<string>("");
+  const [editingLineItemPrice, setEditingLineItemPrice] = useState<number>(0);
+
+  // States for editing comments inline
+  const [editingCommentIndex, setEditingCommentIndex] = useState<number | null>(null);
+  const [editingCommentText, setEditingCommentText] = useState<string>("");
 
   // Active Invoice inputs
   const [selectedQuoteId, setSelectedQuoteId] = useState<string>("01MAS26");
@@ -507,6 +520,87 @@ export default function App() {
       }
       return prev;
     });
+  };
+
+  // Cancel editing line item inline
+  const handleCancelEditLineItem = () => {
+    setEditingLineItemId(null);
+    setEditingLineItemDesc("");
+    setEditingLineItemQty(1);
+    setEditingLineItemPrice(0);
+  };
+
+  // Start editing line item
+  const handleStartEditLineItem = (item: LineItem) => {
+    setEditingLineItemId(item.id);
+    setEditingLineItemDesc(item.desc);
+    setEditingLineItemQty(item.qty);
+    setEditingLineItemPrice(item.unitPrice);
+  };
+
+  // Save the edited line item
+  const handleSaveLineItemEdit = (id: string) => {
+    if (!editingLineItemDesc.trim()) {
+      alert("Please enter a description for the item.");
+      return;
+    }
+    
+    setActiveQuoteItems(prev => prev.map(item => {
+      if (item.id === id) {
+        return {
+          ...item,
+          qty: editingLineItemQty,
+          desc: editingLineItemDesc.trim(),
+          unitPrice: editingLineItemPrice,
+          total: editingLineItemQty * editingLineItemPrice
+        };
+      }
+      return item;
+    }));
+
+    // Update sheet preview if it's active
+    setSheetDoc(prev => {
+      if (prev.type === 'QUOTE') {
+        return {
+          ...prev,
+          items: prev.items.map(item => {
+            if (item.id === id) {
+              return {
+                ...item,
+                qty: editingLineItemQty,
+                desc: editingLineItemDesc.trim(),
+                unitPrice: editingLineItemPrice,
+                total: editingLineItemQty * editingLineItemPrice
+              };
+            }
+            return item;
+          })
+        };
+      }
+      return prev;
+    });
+
+    handleCancelEditLineItem();
+  };
+
+  // Cancel editing comment item
+  const handleCancelEditComment = () => {
+    setEditingCommentIndex(null);
+    setEditingCommentText("");
+  };
+
+  // Save edited comment item
+  const handleSaveCommentEdit = (index: number) => {
+    if (!editingCommentText.trim()) {
+      alert("Comment cannot be empty.");
+      return;
+    }
+    setQuoteComments(prev => {
+      const copy = [...prev];
+      copy[index] = editingCommentText.trim();
+      return copy;
+    });
+    handleCancelEditComment();
   };
 
   // Finalize Invoice Action (Stage 1-6 from VBA)
@@ -909,25 +1003,92 @@ export default function App() {
                       No items added yet. Use the insertion loop block above.
                     </div>
                   ) : (
-                    <div className="max-h-40 overflow-y-auto pr-1 flex flex-col gap-1.5 text-xs">
+                    <div className="max-h-56 overflow-y-auto pr-1 flex flex-col gap-1.5 text-xs">
                       {activeQuoteItems.map((item) => (
-                        <div key={item.id} className="flex justify-between items-center bg-slate-950 p-2.5 rounded border border-slate-850 gap-2">
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-white truncate text-xs">{item.desc}</div>
-                            <div className="text-[10px] text-slate-450 font-mono">
-                              {item.qty} x {formatCurrency(item.unitPrice)}
+                        <div key={item.id} className="flex flex-col bg-slate-950 p-2.5 rounded border border-slate-850 gap-2">
+                          {editingLineItemId === item.id ? (
+                            <div className="flex flex-col gap-2 w-full">
+                              <div className="flex flex-col gap-1">
+                                <label className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Edit Description</label>
+                                <input 
+                                  type="text" 
+                                  value={editingLineItemDesc}
+                                  onChange={(e) => setEditingLineItemDesc(e.target.value)}
+                                  className="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-teal-500"
+                                />
+                              </div>
+                              <div className="grid grid-cols-2 gap-2 text-xs">
+                                <div className="flex flex-col gap-1">
+                                  <label className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Qty</label>
+                                  <input 
+                                    type="number" 
+                                    min="1"
+                                    value={editingLineItemQty}
+                                    onChange={(e) => setEditingLineItemQty(Number(e.target.value))}
+                                    className="bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs text-white focus:outline-none font-mono"
+                                  />
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                  <label className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Unit Price</label>
+                                  <input 
+                                    type="number" 
+                                    min="0"
+                                    step="0.01"
+                                    value={editingLineItemPrice}
+                                    onChange={(e) => setEditingLineItemPrice(Number(e.target.value))}
+                                    className="bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs text-white focus:outline-none font-mono"
+                                  />
+                                </div>
+                              </div>
+                              <div className="flex justify-between items-center text-xs mt-1 pt-1.5 border-t border-slate-900">
+                                <span className="font-mono text-teal-400 font-semibold">Total: {formatCurrency(editingLineItemQty * editingLineItemPrice)}</span>
+                                <div className="flex items-center gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSaveLineItemEdit(item.id)}
+                                    className="bg-teal-500 hover:bg-teal-400 text-slate-950 p-1.5 rounded transition-all flex items-center justify-center cursor-pointer"
+                                    title="Save changes"
+                                  >
+                                    <Check className="h-3 w-3" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={handleCancelEditLineItem}
+                                    className="bg-slate-800 hover:bg-slate-700 text-slate-300 p-1.5 rounded transition-all flex items-center justify-center cursor-pointer"
+                                    title="Cancel"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono font-semibold text-teal-400">{formatCurrency(item.total)}</span>
-                            <button 
-                              onClick={() => handleRemoveLineItem(item.id)}
-                              className="text-slate-500 hover:text-red-400 p-1 rounded transition-all"
-                              title="Delete Item"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
+                          ) : (
+                            <div className="flex justify-between items-center gap-2">
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium text-white truncate text-xs" title={item.desc}>{item.desc}</div>
+                                <div className="text-[10px] text-slate-450 font-mono">
+                                  {item.qty} x {formatCurrency(item.unitPrice)}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono font-semibold text-teal-400">{formatCurrency(item.total)}</span>
+                                <button 
+                                  onClick={() => handleStartEditLineItem(item)}
+                                  className="text-slate-500 hover:text-white p-1 rounded transition-all cursor-pointer"
+                                  title="Edit Item"
+                                >
+                                  <Pencil className="h-3 w-3" />
+                                </button>
+                                <button 
+                                  onClick={() => handleRemoveLineItem(item.id)}
+                                  className="text-slate-500 hover:text-red-400 p-1 rounded transition-all cursor-pointer"
+                                  title="Delete Item"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -981,33 +1142,76 @@ export default function App() {
                     </div>
 
                     {/* Comment List */}
-                    <div className="flex flex-col gap-1.5 max-h-36 overflow-y-auto">
+                    <div className="flex flex-col gap-1.5 max-h-48 overflow-y-auto">
                       {quoteComments.map((comment, index) => (
                         <div 
                           key={index} 
-                          className="flex items-start justify-between gap-2 p-2 rounded bg-slate-900/60 border border-slate-800/50 hover:border-slate-850 transition-all text-xs text-slate-300"
+                          className="flex flex-col gap-2 p-2 rounded bg-slate-900/60 border border-slate-800/50 hover:border-slate-850 transition-all text-xs text-slate-300"
                         >
-                          <div className="flex items-start gap-1.5 min-w-0">
-                            <span className="text-teal-400 font-bold shrink-0 mt-0.5">•</span>
-                            <span className="leading-relaxed select-text text-[11px] text-slate-300 font-medium" title={comment}>
-                              {comment}
-                            </span>
-                          </div>
-                          {index > 0 ? (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setQuoteComments(prev => prev.filter((_, i) => i !== index));
-                              }}
-                              className="text-slate-500 hover:text-red-450 p-0.5 rounded transition-all shrink-0"
-                              title="Remove comment bullet"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
+                          {editingCommentIndex === index ? (
+                            <div className="flex flex-col gap-2 w-full">
+                              <textarea
+                                value={editingCommentText}
+                                onChange={(e) => setEditingCommentText(e.target.value)}
+                                className="w-full bg-slate-950 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-teal-500 font-sans min-h-[50px] resize-y"
+                              />
+                              <div className="flex justify-end gap-1.5 pt-1">
+                                <button
+                                  type="button"
+                                  onClick={() => handleSaveCommentEdit(index)}
+                                  className="bg-teal-500 hover:bg-teal-400 text-slate-950 p-1 rounded transition-all cursor-pointer flex items-center justify-center"
+                                  title="Save comment"
+                                >
+                                  <Check className="h-3 w-3" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={handleCancelEditComment}
+                                  className="bg-slate-800 hover:bg-slate-700 text-slate-300 p-1 rounded transition-all cursor-pointer flex items-center justify-center"
+                                  title="Cancel edit"
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </div>
+                            </div>
                           ) : (
-                            <span className="text-[9px] bg-slate-950 text-slate-500 border border-amber-500/10 px-1.5 py-0.5 rounded shrink-0 font-mono">
-                              Permanent
-                            </span>
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex items-start gap-1.5 min-w-0">
+                                <span className="text-teal-400 font-bold shrink-0 mt-0.5">•</span>
+                                <span className="leading-relaxed select-text text-[11px] text-slate-300 font-medium" title={comment}>
+                                  {comment}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingCommentIndex(index);
+                                    setEditingCommentText(comment);
+                                  }}
+                                  className="text-slate-500 hover:text-white p-0.5 rounded transition-all cursor-pointer"
+                                  title="Edit comment bullet"
+                                >
+                                  <Pencil className="h-3 w-3" />
+                                </button>
+                                {index > 0 ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setQuoteComments(prev => prev.filter((_, i) => i !== index));
+                                    }}
+                                    className="text-slate-500 hover:text-red-450 p-0.5 rounded transition-all cursor-pointer"
+                                    title="Remove comment bullet"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </button>
+                                ) : (
+                                  <span className="text-[8px] bg-slate-950 text-slate-500 border border-amber-500/10 px-1 py-0.5 rounded font-mono">
+                                    Permanent
+                                  </span>
+                                )}
+                              </div>
+                            </div>
                           )}
                         </div>
                       ))}
