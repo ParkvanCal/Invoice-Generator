@@ -37,7 +37,7 @@ textarea {
 /* Perfect print layout stylesheets. Isolates the Excel sheet template entirely onto clean pages. */
 @page {
   size: A4 portrait;
-  margin: 6mm 10mm 6mm 10mm !important;
+  margin: 12mm 12mm 12mm 12mm !important;
 }
 
 @media print {
@@ -113,14 +113,14 @@ textarea {
     justify-content: space-between !important;
     background-color: #ffffff !important;
     color: #09090b !important;
-    margin: 0 auto !important; /* Centered with zero extra page-break-inducing margins */
+    margin: 0 !important; /* Margins are symmetrically handled by modern @page setup */
     padding: 0 !important;
-    width: 190mm !important; /* Maximizes printable space on A4 page (210mm wide - 20mm margin) */
-    max-width: 190mm !important;
-    min-width: 190mm !important;
-    height: 258mm !important; /* Perfect ceiling: comfortably fits inside A4 (297mm - 12mm vertical margin = 285mm potential, saving plenty of room) */
-    min-height: 258mm !important;
-    max-height: 258mm !important;
+    width: 186mm !important; /* Perfect balance: exactly 210mm - 24mm margin = 186mm width */
+    max-width: 186mm !important;
+    min-width: 186mm !important;
+    height: 273mm !important; /* Perfect balance: exactly 297mm - 24mm margin = 273mm height */
+    min-height: 273mm !important;
+    max-height: 273mm !important;
     box-shadow: none !important;
     border: none !important;
     page-break-inside: avoid !important;
