@@ -25,8 +25,6 @@ import {
   X
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { jsPDF } from "jspdf";
-import html2canvas from "html2canvas";
 import { JobBookEntry, DocumentDetails, LineItem, DocumentState } from "./types";
 // @ts-ignore
 import companyLogoImage from "./assets/images/company_logo_1780762745301.png";
@@ -336,57 +334,9 @@ export default function App() {
     }
   };
 
-  // Real client-side high-fidelity PDF Generation & Download
-  const handleExportPDF = () => {
-    const element = sheetRef.current;
-    if (!element) return;
-    
-    setIsGeneratingPDF(true);
-    
-    // Wait for React to re-render the DOM with any PDF-only styling (no borders) and custom footers
-    setTimeout(() => {
-      html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        logging: false
-      }).then(canvas => {
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF({
-          orientation: 'portrait',
-          unit: 'mm',
-          format: 'a4'
-        });
-        
-        let imgWidth = 210; // A4 size width in mm
-        const pageHeight = 297; // A4 size height in mm
-        let imgHeight = (canvas.height * imgWidth) / canvas.width;
-        
-        // Since the invoice/quote is customized to be a perfect visual single-page letterhead,
-        // if the canvas aspect ratio makes it exceed 297 mm, we automatically downscale the image
-        // slightly so it fits perfectly on a single page, centering it horizontally.
-        let positionX = 0;
-        let positionY = 0;
-        
-        if (imgHeight > pageHeight) {
-          const scaleFactor = pageHeight / imgHeight;
-          imgHeight = pageHeight;
-          imgWidth = imgWidth * scaleFactor;
-          positionX = (210 - imgWidth) / 2; // Center horizontally on the A4 canvas
-        }
-        
-        pdf.addImage(imgData, 'PNG', positionX, positionY, imgWidth, imgHeight);
-        
-        const cleanClient = (sheetDoc.details.clientName || 'CLIENT').replace(/[^a-zA-Z0-9]/g, '_');
-        const fileName = `${sheetDoc.details.jobID || 'DOCUMENT'}_${cleanClient}_${sheetDoc.type}.pdf`;
-        pdf.save(fileName);
-        setIsGeneratingPDF(false);
-      }).catch(err => {
-        console.error(err);
-        setIsGeneratingPDF(false);
-        alert("Error generating PDF document. Please try again.");
-      });
-    }, 150); // 150ms timeout is perfect for modern browsers
+  // Trigger system OS print dialogue
+  const handlePrintDocument = () => {
+    window.print();
   };
 
   // Format utility matching standard Excel accounting
@@ -642,9 +592,9 @@ export default function App() {
 
     setActiveTab('invoice');
 
-    // Real high-fidelity PDF generation & trigger
+    // Trigger system OS print dialogue
     setTimeout(() => {
-      handleExportPDF();
+      handlePrintDocument();
     }, 350);
   };
 
@@ -1828,27 +1778,11 @@ export default function App() {
             
             <div className="flex items-center gap-2 self-stretch sm:self-auto justify-end">
               <button 
-                onClick={handleExportPDF}
-                disabled={isGeneratingPDF}
-                className={`px-3 py-1.5 rounded flex items-center gap-1.5 text-[11px] font-bold transition-all cursor-pointer shadow border ${isGeneratingPDF ? 'bg-teal-950/40 text-teal-400 border-teal-500/20' : 'bg-teal-500 text-slate-950 hover:bg-teal-400 border-transparent'}`}
-                id="btn-download-pdf"
-              >
-                {isGeneratingPDF ? (
-                  <>
-                    <RefreshCw className="h-3.5 w-3.5 animate-spin" /> Rendering A4 Copy...
-                  </>
-                ) : (
-                  <>
-                    <Download className="h-3.5 w-3.5" /> Download Active PDF Code
-                  </>
-                )}
-              </button>
-              <button 
-                onClick={() => window.print()}
-                className="bg-slate-800 text-slate-300 hover:text-white px-2.5 py-1.5 rounded border border-slate-700 flex items-center gap-1.5 text-[11px] font-medium transition-all cursor-pointer"
+                onClick={handlePrintDocument}
+                className="bg-teal-500 text-slate-950 hover:bg-teal-400 px-4 py-1.5 rounded flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer shadow border border-transparent"
                 id="btn-native-print"
               >
-                <Printer className="h-3.5 w-3.5" /> OS Print System
+                <Printer className="h-4 w-4" /> Print / Save PDF via Browser
               </button>
             </div>
           </div>
