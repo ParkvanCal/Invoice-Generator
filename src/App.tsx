@@ -152,6 +152,9 @@ export default function App() {
   const [editingCommentIndex, setEditingCommentIndex] = useState<number | null>(null);
   const [editingCommentText, setEditingCommentText] = useState<string>("");
 
+  // Selected Quote ID for editing / reviewing
+  const [editingQuoteId, setEditingQuoteId] = useState<string | null>(null);
+
   // Active Invoice inputs
   const [selectedQuoteId, setSelectedQuoteId] = useState<string>("01MAS26");
   const [invoiceOrderNum, setInvoiceOrderNum] = useState<string>("Verbal");
@@ -363,7 +366,7 @@ export default function App() {
 
   // Trigger: Refresh Sheet Preview with Quotation Form values
   const handleUpdateQuotePreview = () => {
-    const jobID = generateJobID(quoteForm.clientName);
+    const jobID = editingQuoteId || generateJobID(quoteForm.clientName);
     setSheetDoc({
       type: 'QUOTE',
       details: {
@@ -428,6 +431,120 @@ export default function App() {
     alert(`Quotation saved and logged to Job Book successfully under Reference: ${generatedID}`);
   };
 
+  // Load a saved quotation for review and editing
+  const handleLoadQuoteForEdit = (quoteId: string) => {
+    const quote = finalizedQuotes.find(q => q.id === quoteId);
+    if (!quote) return;
+    
+    setEditingQuoteId(quote.id);
+    setQuoteForm({
+      clientName: quote.details.clientName,
+      addr: quote.details.addr,
+      city: quote.details.city,
+      contact: quote.details.contact,
+      repName: quote.details.repName,
+      date: quote.details.date
+    });
+    setActiveQuoteItems([...quote.items]);
+    
+    // Update the live preview sheet to show this quote immediately.
+    setSheetDoc({
+      type: 'QUOTE',
+      details: {
+        ...quote.details
+      },
+      items: [...quote.items]
+    });
+  };
+
+  // Cancel reviewing/editing a saved quotation and restore to default empty/blank list
+  const handleCancelQuoteEdit = () => {
+    setEditingQuoteId(null);
+    setQuoteForm({
+      clientName: "",
+      addr: "",
+      city: "",
+      contact: "",
+      repName: "",
+      date: new Date().toISOString().split('T')[0]
+    });
+    setActiveQuoteItems([]);
+    
+    // Reset sheet doc back to empty/draft
+    setSheetDoc({
+      type: 'QUOTE',
+      details: {
+        jobID: "DRAFT",
+        clientName: "",
+        addr: "",
+        city: "",
+        contact: "",
+        repName: "",
+        date: new Date().toISOString().split('T')[0]
+      },
+      items: []
+    });
+  };
+
+  // Re-save/Update an existing logged quotation and synchronize across all logs/job book
+  const handleUpdateSavedQuotation = () => {
+    if (!editingQuoteId) return;
+    if (activeQuoteItems.length === 0) {
+      alert("Please add at least one item before updating the quotation.");
+      return;
+    }
+
+    const subtotal = activeQuoteItems.reduce((acc, item) => acc + item.total, 0);
+    const updatedQuote = {
+      id: editingQuoteId,
+      details: {
+        jobID: editingQuoteId,
+        ...quoteForm
+      },
+      items: [...activeQuoteItems],
+      subtotal
+    };
+
+    // 1. Update Finalized Quotes
+    setFinalizedQuotes(prev => {
+      return prev.map(q => q.id === editingQuoteId ? updatedQuote : q);
+    });
+
+    // 2. Update Job Book records (replace old entries with new ones)
+    const newEntries: JobBookEntry[] = activeQuoteItems.map(item => ({
+      jobID: editingQuoteId,
+      clientName: quoteForm.clientName,
+      qty: item.qty,
+      desc: item.desc,
+      unitPrice: item.unitPrice,
+      total: item.total
+    }));
+
+    setJobBook(prev => {
+      const filtered = prev.filter(e => e.jobID !== editingQuoteId);
+      return [...filtered, ...newEntries];
+    });
+
+    // 3. Update the WYSIWYG sheet preview
+    setSheetDoc({
+      type: 'QUOTE',
+      details: {
+        ...quoteForm,
+        jobID: editingQuoteId
+      },
+      items: [...activeQuoteItems]
+    });
+
+    // 4. Update selected quote in invoice dropdown so it works seamlessly
+    setSelectedQuoteId(editingQuoteId);
+
+    // 5. Success alert
+    alert(`Quotation Reference: ${editingQuoteId} has been successfully updated! Generating an invoice from this quotation ID will now reflect all these changes.`);
+    
+    // 6. Clear editing mode
+    setEditingQuoteId(null);
+  };
+
   // Add Item to Quotation Active Draft
   const handleAddLineItem = () => {
     if (!newItemDesc) {
@@ -449,7 +566,7 @@ export default function App() {
     setNewItemQty(1);
     
     // Hot-update the Sheet view
-    const generatedID = generateJobID(quoteForm.clientName);
+    const generatedID = editingQuoteId || generateJobID(quoteForm.clientName);
     setSheetDoc(prev => {
       if (prev.type === 'QUOTE') {
         return {
@@ -825,6 +942,54 @@ export default function App() {
                   <p className="text-xs text-slate-400 mt-1">This populates Customer Details, Rep name, and dynamic item rows in the template.</p>
                 </div>
 
+                {/* Review & Edit Quotation Selector */}
+                <div className="bg-slate-950 p-3.5 rounded-lg border border-slate-800 flex flex-col gap-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                      <FileText className="h-3.5 w-3.5 text-teal-400" />
+                      Review & Edit Saved Quotations
+                    </span>
+                    {editingQuoteId && (
+                      <span className="text-[9px] bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded font-mono font-bold animate-pulse">
+                        EDITING: {editingQuoteId}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <select
+                      value={editingQuoteId || ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val) {
+                          handleLoadQuoteForEdit(val);
+                        } else {
+                          handleCancelQuoteEdit();
+                        }
+                      }}
+                      className="flex-1 bg-slate-900 border border-slate-800 text-slate-300 rounded px-2.5 py-1.5 text-xs font-mono focus:outline-none focus:border-teal-500"
+                    >
+                      <option value="">-- Choose Quote to Review/Edit --</option>
+                      {finalizedQuotes.map(q => (
+                        <option key={q.id} value={q.id}>
+                          {q.id} - {q.details.clientName} ({formatCurrency(q.subtotal)})
+                        </option>
+                      ))}
+                    </select>
+                    {editingQuoteId && (
+                      <button
+                        type="button"
+                        onClick={handleCancelQuoteEdit}
+                        className="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer border border-slate-700"
+                      >
+                        Reset / New
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-slate-500 leading-normal">
+                    Select any logged quotation above to review its data, make edits, and re-save. Corresponding invoices will automatically reflect your changes.
+                  </p>
+                </div>
+
                 {/* Form Elements */}
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   <div className="flex flex-col gap-1 col-span-2">
@@ -1173,14 +1338,49 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="flex gap-2.5 pt-2">
-                  <button 
-                    id="btn-save-quotation"
-                    onClick={handleSaveQuotation}
-                    className="flex-1 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 text-slate-950 font-bold py-2.5 px-4 rounded-lg text-xs tracking-wider uppercase shadow-lg flex items-center justify-center gap-2 transition-all cursor-pointer"
-                  >
-                    <CheckCircle2 className="h-4 w-4" /> Save Quotation & Log (Stage 6)
-                  </button>
+                <div className="flex flex-col gap-2 pt-2">
+                  {editingQuoteId ? (
+                    <div className="flex flex-col gap-2">
+                      <button 
+                        id="btn-update-saved-quotation"
+                        onClick={handleUpdateSavedQuotation}
+                        className="bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 text-slate-950 font-extrabold py-2.5 px-4 rounded-lg text-xs tracking-wider uppercase shadow-lg flex items-center justify-center gap-2 transition-all cursor-pointer"
+                      >
+                        <CheckCircle2 className="h-4 w-4" /> Save Changes to {editingQuoteId}
+                      </button>
+                      
+                      <div className="grid grid-cols-2 gap-2">
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            // Save as a new copy
+                            setEditingQuoteId(null);
+                            setTimeout(() => {
+                              handleSaveQuotation();
+                            }, 50);
+                          }}
+                          className="bg-slate-800 hover:bg-slate-705 text-white font-bold py-2 px-3 rounded-lg text-[10px] uppercase tracking-wider transition-all cursor-pointer border border-slate-700 text-center"
+                        >
+                          Save as New Copy
+                        </button>
+                        <button 
+                          type="button"
+                          onClick={handleCancelQuoteEdit}
+                          className="bg-slate-950 hover:bg-slate-900 text-slate-400 font-bold py-2 px-3 rounded-lg text-[10px] uppercase tracking-wider transition-all cursor-pointer border border-slate-850 text-center"
+                        >
+                          Exit Edit Mode
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button 
+                      id="btn-save-quotation"
+                      onClick={handleSaveQuotation}
+                      className="flex-1 bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 text-slate-950 font-bold py-2.5 px-4 rounded-lg text-xs tracking-wider uppercase shadow-lg flex items-center justify-center gap-2 transition-all cursor-pointer"
+                    >
+                      <CheckCircle2 className="h-4 w-4" /> Save Quotation & Log (Stage 6)
+                    </button>
+                  )}
                 </div>
               </motion.div>
             )}
