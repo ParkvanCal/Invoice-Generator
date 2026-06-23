@@ -337,8 +337,140 @@ export default function App() {
     }
   };
 
-  // Trigger system OS print dialogue
+  // Trigger system OS print dialogue (also auto-saves and logs state if printing a quotation)
   const handlePrintDocument = () => {
+    if (sheetDoc.type === 'QUOTE') {
+      if (activeQuoteItems.length === 0) {
+        alert("Please add at least one item before printing the quotation.");
+        return;
+      }
+      
+      if (editingQuoteId) {
+        // Mode: Reviewing/editing an existing quote - update the database & logs
+        const subtotal = activeQuoteItems.reduce((acc, item) => acc + item.total, 0);
+        const updatedQuote = {
+          id: editingQuoteId,
+          details: {
+            jobID: editingQuoteId,
+            ...quoteForm
+          },
+          items: [...activeQuoteItems],
+          subtotal
+        };
+
+        setFinalizedQuotes(prev => {
+          return prev.map(q => q.id === editingQuoteId ? updatedQuote : q);
+        });
+
+        const newEntries: JobBookEntry[] = activeQuoteItems.map(item => ({
+          jobID: editingQuoteId,
+          clientName: quoteForm.clientName,
+          qty: item.qty,
+          desc: item.desc,
+          unitPrice: item.unitPrice,
+          total: item.total
+        }));
+
+        setJobBook(prev => {
+          const filtered = prev.filter(e => e.jobID !== editingQuoteId);
+          return [...filtered, ...newEntries];
+        });
+
+        setSheetDoc({
+          type: 'QUOTE',
+          details: {
+            ...quoteForm,
+            jobID: editingQuoteId
+          },
+          items: [...activeQuoteItems]
+        });
+
+        setSelectedQuoteId(editingQuoteId);
+        setEditingQuoteId(null);
+        alert(`Quotation Reference: ${editingQuoteId} has been successfully updated, logged to Job Book, and prepared for printing.`);
+      } else {
+        // Mode: Fresh draft or quick print of an already saved quote.
+        const currentID = sheetDoc.details.jobID;
+        const existsInLogs = finalizedQuotes.some(q => q.id === currentID && currentID !== "DRAFT" && currentID !== "01MAS26");
+
+        if (existsInLogs) {
+          // Already saved, let's update it in-place to make sure any modifications are synchronized
+          const subtotal = activeQuoteItems.reduce((acc, item) => acc + item.total, 0);
+          const updatedQuote = {
+            id: currentID,
+            details: {
+              jobID: currentID,
+              ...quoteForm
+            },
+            items: [...activeQuoteItems],
+            subtotal
+          };
+
+          setFinalizedQuotes(prev => prev.map(q => q.id === currentID ? updatedQuote : q));
+
+          const newEntries: JobBookEntry[] = activeQuoteItems.map(item => ({
+            jobID: currentID,
+            clientName: quoteForm.clientName,
+            qty: item.qty,
+            desc: item.desc,
+            unitPrice: item.unitPrice,
+            total: item.total
+          }));
+
+          setJobBook(prev => {
+            const filtered = prev.filter(e => e.jobID !== currentID);
+            return [...filtered, ...newEntries];
+          });
+
+          alert(`Changes to saved Quotation ${currentID} have been auto-saved and logged before printing.`);
+        } else {
+          // Fresh draft needs a new unique ID and a complete log entry 
+          const generatedID = generateJobID(quoteForm.clientName);
+          
+          const newEntries: JobBookEntry[] = activeQuoteItems.map(item => ({
+            jobID: generatedID,
+            clientName: quoteForm.clientName,
+            qty: item.qty,
+            desc: item.desc,
+            unitPrice: item.unitPrice,
+            total: item.total
+          }));
+
+          setJobBook(prev => [...prev, ...newEntries]);
+
+          const subtotal = activeQuoteItems.reduce((acc, item) => acc + item.total, 0);
+          const newFinalized = {
+            id: generatedID,
+            details: {
+              jobID: generatedID,
+              ...quoteForm
+            },
+            items: [...activeQuoteItems],
+            subtotal
+          };
+
+          setFinalizedQuotes(prev => {
+            const filtered = prev.filter(q => q.id !== generatedID);
+            return [...filtered, newFinalized];
+          });
+
+          setSelectedQuoteId(generatedID);
+
+          setSheetDoc({
+            type: 'QUOTE',
+            details: {
+              ...quoteForm,
+              jobID: generatedID
+            },
+            items: [...activeQuoteItems]
+          });
+
+          alert(`Quotation auto-saved and logged to Job Book under Reference: ${generatedID} before printing.`);
+        }
+      }
+    }
+
+    // Trigger standard system OS print dialog
     window.print();
   };
 
