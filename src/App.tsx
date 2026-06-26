@@ -618,6 +618,41 @@ export default function App() {
     });
   };
 
+  // Clear all invoice/quotation inputs, active line items, and comments to start a completely new document
+  const handleClearInvoiceAndComments = () => {
+    const confirmClear = window.confirm("Are you sure you want to clear all current active quotation/invoice entries, customer metadata, active line items, and comments? This allows starting a brand new document.");
+    if (!confirmClear) return;
+
+    setEditingQuoteId(null);
+    setQuoteForm({
+      clientName: "",
+      addr: "",
+      city: "",
+      contact: "",
+      repName: "",
+      date: new Date().toISOString().split('T')[0]
+    });
+    setActiveQuoteItems([]);
+    setQuoteComments([]);
+    setInvoiceOrderNum("");
+    setSelectedQuoteId("__ACTIVE_DRAFT__");
+    
+    // Reset sheet doc back to empty/draft in QUOTE mode by default
+    setSheetDoc({
+      type: 'QUOTE',
+      details: {
+        jobID: "DRAFT",
+        clientName: "",
+        addr: "",
+        city: "",
+        contact: "",
+        repName: "",
+        date: new Date().toISOString().split('T')[0]
+      },
+      items: []
+    });
+  };
+
   // Re-save/Update an existing logged quotation and synchronize across all logs/job book
   const handleUpdateSavedQuotation = () => {
     if (!editingQuoteId) return;
@@ -1537,6 +1572,21 @@ export default function App() {
                     </button>
                   )}
                 </div>
+
+                {/* Clear / Reset Workspace section */}
+                <div className="border-t border-slate-800/80 pt-3 flex items-center justify-between gap-2">
+                  <span className="text-[10px] text-slate-500 italic">Need to start completely fresh?</span>
+                  <button
+                    type="button"
+                    onClick={handleClearInvoiceAndComments}
+                    className="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 hover:border-red-500/30 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                    id="btn-clear-quotation-workspace"
+                    title="Clear quotation entries, lines, and comments"
+                  >
+                    <Trash2 className="h-3.5 w-3.5 text-red-400" />
+                    Reset Workspace
+                  </button>
+                </div>
               </motion.div>
             )}
 
@@ -1709,6 +1759,21 @@ export default function App() {
                       </button>
                     ))}
                   </div>
+                </div>
+
+                {/* Clear / Reset Workspace section */}
+                <div className="border-t border-slate-800/80 pt-3 mt-2 flex items-center justify-between gap-2">
+                  <span className="text-[10px] text-slate-500 italic">Want to clear active entries & comments?</span>
+                  <button
+                    type="button"
+                    onClick={handleClearInvoiceAndComments}
+                    className="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 hover:border-red-500/30 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                    id="btn-clear-invoice-workspace"
+                    title="Clear entries, items, and comments"
+                  >
+                    <Trash2 className="h-3.5 w-3.5 text-red-400" />
+                    Reset Workspace
+                  </button>
                 </div>
 
               </motion.div>
