@@ -104,6 +104,17 @@ textarea {
     margin: 0 !important;
     box-shadow: none !important;
     border: none !important;
+    overflow: visible !important;
+  }
+
+  /* Prevent any browser/div scrollbars from showing up on printouts */
+  *, *::before, *::after {
+    scrollbar-width: none !important;
+  }
+  ::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
   }
 
   /* Target the printable card explicitly with absolute millimeter page dimensions */
@@ -127,6 +138,7 @@ textarea {
     break-inside: avoid !important;
     box-sizing: border-box !important;
     position: relative !important;
+    overflow: hidden !important;
   }
 
   /* Direct child layout container in canvas takes full heights to stretch to bottom margin symmetry */

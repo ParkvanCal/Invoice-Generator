@@ -891,9 +891,14 @@ export default function App() {
   // Progressive Single-Page layout adaptive spacing parameters
   const isInvoice = sheetDoc.type !== 'QUOTE';
   const itemsCount = sheetDoc.items.length;
-  const isCrowded = itemsCount > 6 || (isInvoice && itemsCount > 4);
-  const isVeryCrowded = itemsCount > 10 || (isInvoice && itemsCount > 7);
-  const isUltraCrowded = itemsCount > 13 || (isInvoice && itemsCount > 10);
+  const commentsCount = quoteComments.length;
+  
+  // Each comment is roughly equivalent to 0.75 of an item row in terms of vertical footprint on the printout.
+  const effectiveItemsCount = itemsCount + (isInvoice ? 0 : commentsCount * 0.75);
+
+  const isCrowded = effectiveItemsCount > 6 || (isInvoice && itemsCount > 4);
+  const isVeryCrowded = effectiveItemsCount > 10 || (isInvoice && itemsCount > 7);
+  const isUltraCrowded = effectiveItemsCount > 13 || (isInvoice && itemsCount > 10);
   
   // Total target rows to render to perfectly fill exactly one page:
   // Since Invoice view includes a larger and detailed accounting footer, we use a smaller rows ceiling (6) so it never spills over.
@@ -919,19 +924,37 @@ export default function App() {
         : 'text-[11px]';
 
   // Branding component sizes
-  const logoMaxHeightStyle = isVeryCrowded ? '32px' : isCrowded ? '42px' : '52px';
-  const headerAddressFontSizeClass = isVeryCrowded ? 'text-[9px] leading-[12px]' : isCrowded ? 'text-[9.5px] leading-[13px]' : 'text-[10.5px] leading-[14px]';
-  const bannerHeightClass = isVeryCrowded ? 'h-[24px] mt-1 mb-1.5' : isCrowded ? 'h-[30px] mt-1.5 mb-2.5' : 'h-[38px] mt-2 mb-3.5';
-  const bannerFontSizeClass = isVeryCrowded ? 'text-[12.5px]' : isCrowded ? 'text-[14.5px]' : 'text-[16.5px]';
-  const billingBlockMarginClass = isVeryCrowded ? 'mt-1.5 gap-3' : isCrowded ? 'mt-2 gap-4' : 'mt-3 gap-6';
+  const logoMaxHeightStyle = isUltraCrowded ? '26px' : isVeryCrowded ? '32px' : isCrowded ? '42px' : '52px';
+  const headerAddressFontSizeClass = isUltraCrowded ? 'text-[8.5px] leading-[11px]' : isVeryCrowded ? 'text-[9px] leading-[12px]' : isCrowded ? 'text-[9.5px] leading-[13px]' : 'text-[10.5px] leading-[14px]';
+  const bannerHeightClass = isUltraCrowded ? 'h-[20px] mt-0.5 mb-1' : isVeryCrowded ? 'h-[24px] mt-1 mb-1.5' : isCrowded ? 'h-[30px] mt-1.5 mb-2.5' : 'h-[38px] mt-2 mb-3.5';
+  const bannerFontSizeClass = isUltraCrowded ? 'text-[11px]' : isVeryCrowded ? 'text-[12.5px]' : isCrowded ? 'text-[14.5px]' : 'text-[16.5px]';
+  const billingBlockMarginClass = isUltraCrowded ? 'mt-1 gap-2' : isVeryCrowded ? 'mt-1.5 gap-3' : isCrowded ? 'mt-2 gap-4' : 'mt-3 gap-6';
   
   // Footer parts spacers/margins
-  const footerMtClass = isVeryCrowded ? 'mt-2' : isCrowded ? 'mt-4' : 'mt-6';
-  const invoiceFooterSpacingGapClass = isVeryCrowded ? 'gap-2' : isCrowded ? 'gap-4' : 'gap-6';
-  const commentSpacerHeightClass = isVeryCrowded ? 'h-2' : isCrowded ? 'h-3' : 'h-4';
-  const thankYouMarginClass = isVeryCrowded ? 'mt-3 mb-1.5' : isCrowded ? 'mt-6 mb-2.5' : 'mt-12 mb-4';
-  const bankDetailsPaddingClass = isVeryCrowded ? 'p-1.5 mt-3' : isCrowded ? 'p-2.5 mt-5' : 'p-3.5 mt-6';
-  const pageBorderLineMtClass = isVeryCrowded ? 'mt-3 mb-1.5' : isCrowded ? 'mt-6 mb-2.5' : 'mt-8 mb-3';
+  const footerMtClass = isUltraCrowded ? 'mt-1' : isVeryCrowded ? 'mt-2' : isCrowded ? 'mt-4' : 'mt-6';
+  const invoiceFooterSpacingGapClass = isUltraCrowded ? 'gap-1' : isVeryCrowded ? 'gap-2' : isCrowded ? 'gap-4' : 'gap-6';
+  const commentSpacerHeightClass = isUltraCrowded ? 'h-1' : isVeryCrowded ? 'h-2' : isCrowded ? 'h-3' : 'h-4';
+  const thankYouMarginClass = isUltraCrowded 
+    ? 'mt-1.5 mb-1' 
+    : isVeryCrowded 
+      ? 'mt-3 mb-1.5' 
+      : isCrowded 
+        ? 'mt-6 mb-2.5' 
+        : 'mt-12 mb-4';
+  const bankDetailsPaddingClass = isUltraCrowded
+    ? 'p-1 mt-1.5'
+    : isVeryCrowded 
+      ? 'p-1.5 mt-3' 
+      : isCrowded 
+        ? 'p-2.5 mt-5' 
+        : 'p-3.5 mt-6';
+  const pageBorderLineMtClass = isUltraCrowded
+    ? 'mt-1.5 mb-1'
+    : isVeryCrowded 
+      ? 'mt-3 mb-1.5' 
+      : isCrowded 
+        ? 'mt-6 mb-2.5' 
+        : 'mt-8 mb-3';
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-teal-500 selection:text-slate-950">
@@ -2689,17 +2712,30 @@ export default function App() {
                           /* QUOTATION VIEW: SIMPLE AND ELEGANT COMMENT AND YELLOW THANK YOU BANNER */
                           <div className="flex flex-col w-full text-left font-sans mt-3 select-text">
                             <span className="text-[12px] font-extrabold text-zinc-950 tracking-wide uppercase select-none mb-1">
-                              Comment:
+                              {quoteComments.length > 1 ? 'Comments:' : 'Comment:'}
                             </span>
-                            <div className="flex flex-col gap-1 pl-1 mb-2">
+                            <div className={`flex flex-col ${isUltraCrowded ? 'gap-0.5' : isVeryCrowded ? 'gap-1' : 'gap-1.5'} pl-1 mb-2`}>
                               {quoteComments.map((comment, index) => (
-                                <p key={index} className="text-[12.5px] font-bold text-zinc-800 leading-relaxed max-w-full flex items-start gap-1">
-                                  <span className="text-zinc-950 font-black shrink-0">•</span>
+                                <p 
+                                  key={index} 
+                                  className={`${
+                                    isUltraCrowded 
+                                      ? 'text-[10.5px] leading-tight' 
+                                      : isVeryCrowded 
+                                        ? 'text-[11px] leading-snug' 
+                                        : 'text-[12.5px] leading-relaxed'
+                                  } ${
+                                    quoteComments.length > 1 
+                                      ? 'font-normal text-zinc-700' 
+                                      : 'font-bold text-zinc-850'
+                                  } max-w-full flex items-start gap-1`}
+                                >
+                                  <span className="text-zinc-955 font-black shrink-0">•</span>
                                   <span className="text-zinc-900">{comment}</span>
                                 </p>
                               ))}
                             </div>
-                            <div className={`w-[70%] mx-auto text-center bg-[#FEFAEB] border-[1.5px] border-[#fcd34d] py-2.5 rounded-none text-[12px] font-black text-amber-950 uppercase tracking-widest select-none shadow-3xs transition-all duration-300 ${thankYouMarginClass}`}>
+                            <div className={`w-[70%] mx-auto text-center bg-[#FEFAEB] border-[1.5px] border-[#fcd34d] py-2 rounded-none text-[12px] font-black text-amber-950 uppercase tracking-widest select-none shadow-3xs transition-all duration-300 ${thankYouMarginClass}`}>
                               Thank You
                             </div>
                           </div>
