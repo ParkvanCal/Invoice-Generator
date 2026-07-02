@@ -618,6 +618,68 @@ export default function App() {
     });
   };
 
+  // States and helpers for client lookup from job ledger
+  const [showClientSuggestions, setShowClientSuggestions] = useState(false);
+
+  const uniqueLedgerClients = Array.from(
+    new Set([
+      ...finalizedQuotes.map(q => q.details.clientName),
+      ...jobBook.map(j => j.clientName)
+    ].filter((name): name is string => typeof name === 'string' && name.trim() !== ""))
+  );
+
+  const getFieldOptions = (fieldName: 'addr' | 'city' | 'contact' | 'repName'): string[] => {
+    const currentClient = quoteForm.clientName.trim().toLowerCase();
+    if (!currentClient) return [];
+    
+    const matches = finalizedQuotes.filter(
+      q => q.details.clientName.trim().toLowerCase() === currentClient
+    );
+    
+    const values = matches
+      .map(q => q.details[fieldName])
+      .filter((v): v is string => typeof v === 'string' && v.trim() !== "");
+      
+    const uniqueMap = new Map<string, string>();
+    values.forEach(v => {
+      const key = v.trim().toLowerCase();
+      if (!uniqueMap.has(key)) {
+        uniqueMap.set(key, v.trim());
+      }
+    });
+    
+    return Array.from(uniqueMap.values());
+  };
+
+  const handleSelectClientFromLedger = (selectedName: string) => {
+    const matches = finalizedQuotes.filter(
+      q => q.details.clientName.trim().toLowerCase() === selectedName.trim().toLowerCase()
+    );
+    
+    if (matches.length > 0) {
+      const uniqueAddrs = Array.from(new Set(matches.map(m => m.details.addr).filter(Boolean)));
+      const uniqueCities = Array.from(new Set(matches.map(m => m.details.city).filter(Boolean)));
+      const uniqueContacts = Array.from(new Set(matches.map(m => m.details.contact).filter(Boolean)));
+      const uniqueReps = Array.from(new Set(matches.map(m => m.details.repName).filter(Boolean)));
+      
+      setQuoteForm(prev => ({
+        ...prev,
+        clientName: selectedName,
+        addr: uniqueAddrs.length === 1 ? uniqueAddrs[0] : prev.addr,
+        city: uniqueCities.length === 1 ? uniqueCities[0] : prev.city,
+        contact: uniqueContacts.length === 1 ? uniqueContacts[0] : prev.contact,
+        repName: uniqueReps.length === 1 ? uniqueReps[0] : prev.repName,
+      }));
+    } else {
+      setQuoteForm(prev => ({ ...prev, clientName: selectedName }));
+    }
+    
+    // Update active template preview
+    setTimeout(() => {
+      handleUpdateQuotePreview();
+    }, 50);
+  };
+
   // Clear all invoice/quotation inputs, active line items, and comments to start a completely new document
   const handleClearInvoiceAndComments = () => {
     const confirmClear = window.confirm("Are you sure you want to clear all current active quotation/invoice entries, customer metadata, active line items, and comments? This allows starting a brand new document.");
@@ -633,7 +695,9 @@ export default function App() {
       date: new Date().toISOString().split('T')[0]
     });
     setActiveQuoteItems([]);
-    setQuoteComments([]);
+    setQuoteComments([
+      "Kindly permit us to use your logo and completed works for advertising and social media promotional purposes."
+    ]);
     setInvoiceOrderNum("");
     setSelectedQuoteId("__ACTIVE_DRAFT__");
     
@@ -926,7 +990,11 @@ export default function App() {
   // Progressive Single-Page layout adaptive spacing parameters
   const isInvoice = sheetDoc.type !== 'QUOTE';
   const itemsCount = sheetDoc.items.length;
-  const commentsCount = quoteComments.length;
+  const promoCommentText = "Kindly permit us to use your logo and completed works for advertising and social media promotional purposes.";
+  const displayComments = quoteComments.some(c => c.toLowerCase().includes("kindly permit us to use your logo"))
+    ? quoteComments
+    : [promoCommentText, ...quoteComments];
+  const commentsCount = displayComments.length;
   
   // Each comment is roughly equivalent to 0.75 of an item row in terms of vertical footprint on the printout.
   const effectiveItemsCount = itemsCount + (isInvoice ? 0 : commentsCount * 0.75);
@@ -1182,16 +1250,58 @@ export default function App() {
 
                 {/* Form Elements */}
                 <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div className="flex flex-col gap-1 col-span-2">
+                  <div className="flex flex-col gap-1 col-span-2 relative">
                     <label className="text-slate-400 font-medium">Customer Name (writes to B9)</label>
                     <input 
                       type="text" 
                       value={quoteForm.clientName}
-                      onChange={(e) => setQuoteForm(prev => ({ ...prev, clientName: e.target.value }))}
-                      onBlur={handleUpdateQuotePreview}
-                      className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500 font-medium"
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setQuoteForm(prev => ({ ...prev, clientName: val }));
+                        setShowClientSuggestions(true);
+                      }}
+                      onFocus={() => setShowClientSuggestions(true)}
+                      onBlur={() => {
+                        // Small delay to allow clicking suggestions
+                        setTimeout(() => setShowClientSuggestions(false), 200);
+                        setTimeout(handleUpdateQuotePreview, 50);
+                      }}
+                      className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500 font-medium animate-pulse-once"
                     />
+                    {showClientSuggestions && (() => {
+                      const currentInput = quoteForm.clientName.trim().toLowerCase();
+                      const matchingClients = currentInput
+                        ? uniqueLedgerClients.filter(name => 
+                            name.toLowerCase().includes(currentInput) && 
+                            name.toLowerCase() !== currentInput
+                          )
+                        : uniqueLedgerClients;
+                        
+                      if (matchingClients.length > 0) {
+                        return (
+                          <div className="absolute z-50 left-0 right-0 top-[100%] mt-1 bg-slate-900 border border-slate-700 rounded-lg shadow-xl max-h-40 overflow-y-auto">
+                            <div className="px-2 py-1 text-[9px] font-bold text-slate-500 bg-slate-950 border-b border-slate-850 tracking-wider">
+                              Select Customer from Ledger
+                            </div>
+                            {matchingClients.map((client, idx) => (
+                              <button
+                                key={idx}
+                                type="button"
+                                onMouseDown={() => {
+                                  handleSelectClientFromLedger(client);
+                                }}
+                                className="w-full text-left px-3 py-2 text-xs text-slate-250 hover:bg-slate-800 transition-colors border-b border-slate-800/40 last:border-0"
+                              >
+                                {client}
+                              </button>
+                            ))}
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
+                  
                   <div className="flex flex-col gap-1 col-span-2">
                     <label className="text-slate-400 font-medium">Customer Address (writes to B10)</label>
                     <input 
@@ -1201,7 +1311,36 @@ export default function App() {
                       onBlur={handleUpdateQuotePreview}
                       className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500"
                     />
+                    {(() => {
+                      const opts = getFieldOptions('addr');
+                      if (opts.length > 1) {
+                        return (
+                          <div className="mt-1 flex flex-wrap gap-1 items-center bg-slate-950/40 p-1.5 rounded border border-slate-850/50">
+                            <span className="text-[9px] font-bold text-teal-400 uppercase tracking-wider mr-1">Choose Address:</span>
+                            {opts.map((opt, idx) => (
+                              <button
+                                key={idx}
+                                type="button"
+                                onClick={() => {
+                                  setQuoteForm(prev => ({ ...prev, addr: opt }));
+                                  setTimeout(handleUpdateQuotePreview, 50);
+                                }}
+                                className={`px-2 py-0.5 rounded text-[10px] border transition-all ${
+                                  quoteForm.addr === opt 
+                                    ? 'bg-teal-500/20 text-teal-300 border-teal-500/40 font-semibold' 
+                                    : 'bg-slate-900 text-slate-350 border-slate-800 hover:border-slate-700'
+                                }`}
+                              >
+                                {opt}
+                              </button>
+                            ))}
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
+
                   <div className="flex flex-col gap-1">
                     <label className="text-slate-400 font-medium">Customer City (writes to B11)</label>
                     <input 
@@ -1211,7 +1350,36 @@ export default function App() {
                       onBlur={handleUpdateQuotePreview}
                       className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500"
                     />
+                    {(() => {
+                      const opts = getFieldOptions('city');
+                      if (opts.length > 1) {
+                        return (
+                          <div className="mt-1 flex flex-wrap gap-1 items-center bg-slate-950/40 p-1.5 rounded border border-slate-850/50">
+                            <span className="text-[9px] font-bold text-teal-400 uppercase tracking-wider mr-1">Choose City:</span>
+                            {opts.map((opt, idx) => (
+                              <button
+                                key={idx}
+                                type="button"
+                                onClick={() => {
+                                  setQuoteForm(prev => ({ ...prev, city: opt }));
+                                  setTimeout(handleUpdateQuotePreview, 50);
+                                }}
+                                className={`px-1.5 py-0.5 rounded text-[10px] border transition-all ${
+                                  quoteForm.city === opt 
+                                    ? 'bg-teal-500/20 text-teal-300 border-teal-500/40 font-semibold' 
+                                    : 'bg-slate-900 text-slate-350 border-slate-800 hover:border-slate-700'
+                                }`}
+                              >
+                                {opt}
+                              </button>
+                            ))}
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
+
                   <div className="flex flex-col gap-1">
                     <label className="text-slate-400 font-medium">Contact Person (writes to B12)</label>
                     <input 
@@ -1221,7 +1389,36 @@ export default function App() {
                       onBlur={handleUpdateQuotePreview}
                       className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500"
                     />
+                    {(() => {
+                      const opts = getFieldOptions('contact');
+                      if (opts.length > 1) {
+                        return (
+                          <div className="mt-1 flex flex-wrap gap-1 items-center bg-slate-950/40 p-1.5 rounded border border-slate-850/50">
+                            <span className="text-[9px] font-bold text-teal-400 uppercase tracking-wider mr-1">Choose Contact:</span>
+                            {opts.map((opt, idx) => (
+                              <button
+                                key={idx}
+                                type="button"
+                                onClick={() => {
+                                  setQuoteForm(prev => ({ ...prev, contact: opt }));
+                                  setTimeout(handleUpdateQuotePreview, 50);
+                                }}
+                                className={`px-1.5 py-0.5 rounded text-[10px] border transition-all ${
+                                  quoteForm.contact === opt 
+                                    ? 'bg-teal-500/20 text-teal-300 border-teal-500/40 font-semibold' 
+                                    : 'bg-slate-900 text-slate-350 border-slate-800 hover:border-slate-700'
+                                }`}
+                              >
+                                {opt}
+                              </button>
+                            ))}
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
+
                   <div className="flex flex-col gap-1">
                     <label className="text-slate-400 font-medium">Quotation Date (writes to I9)</label>
                     <input 
@@ -1232,6 +1429,7 @@ export default function App() {
                       className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500 font-mono"
                     />
                   </div>
+
                   <div className="flex flex-col gap-1">
                     <label className="text-slate-400 font-medium">Sales Rep (writes to I10)</label>
                     <input 
@@ -1241,6 +1439,34 @@ export default function App() {
                       onBlur={handleUpdateQuotePreview}
                       className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500"
                     />
+                    {(() => {
+                      const opts = getFieldOptions('repName');
+                      if (opts.length > 1) {
+                        return (
+                          <div className="mt-1 flex flex-wrap gap-1 items-center bg-slate-950/40 p-1.5 rounded border border-slate-850/50">
+                            <span className="text-[9px] font-bold text-teal-400 uppercase tracking-wider mr-1">Choose Sales Rep:</span>
+                            {opts.map((opt, idx) => (
+                              <button
+                                key={idx}
+                                type="button"
+                                onClick={() => {
+                                  setQuoteForm(prev => ({ ...prev, repName: opt }));
+                                  setTimeout(handleUpdateQuotePreview, 50);
+                                }}
+                                className={`px-1.5 py-0.5 rounded text-[10px] border transition-all ${
+                                  quoteForm.repName === opt 
+                                    ? 'bg-teal-500/20 text-teal-300 border-teal-500/40 font-semibold' 
+                                    : 'bg-slate-900 text-slate-350 border-slate-800 hover:border-slate-700'
+                                }`}
+                              >
+                                {opt}
+                              </button>
+                            ))}
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 </div>
 
@@ -2777,10 +3003,10 @@ export default function App() {
                           /* QUOTATION VIEW: SIMPLE AND ELEGANT COMMENT AND YELLOW THANK YOU BANNER */
                           <div className="flex flex-col w-full text-left font-sans mt-3 select-text">
                             <span className="text-[12px] font-extrabold text-zinc-950 tracking-wide uppercase select-none mb-1">
-                              {quoteComments.length > 1 ? 'Comments:' : 'Comment:'}
+                              {displayComments.length > 1 ? 'Comments:' : 'Comment:'}
                             </span>
                             <div className={`flex flex-col ${isUltraCrowded ? 'gap-0.5' : isVeryCrowded ? 'gap-1' : 'gap-1.5'} pl-1 mb-2`}>
-                              {quoteComments.map((comment, index) => (
+                              {displayComments.map((comment, index) => (
                                 <p 
                                   key={index} 
                                   className={`${
@@ -2790,7 +3016,7 @@ export default function App() {
                                         ? 'text-[11px] leading-snug' 
                                         : 'text-[12.5px] leading-relaxed'
                                   } ${
-                                    quoteComments.length > 1 
+                                    displayComments.length > 1 
                                       ? 'font-normal text-zinc-700' 
                                       : 'font-bold text-zinc-850'
                                   } max-w-full flex items-start gap-1`}
