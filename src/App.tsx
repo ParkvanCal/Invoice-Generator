@@ -1272,16 +1272,22 @@ export default function App() {
                       const currentInput = quoteForm.clientName.trim().toLowerCase();
                       const matchingClients = currentInput
                         ? uniqueLedgerClients.filter(name => 
-                            name.toLowerCase().includes(currentInput) && 
+                            name.toLowerCase().startsWith(currentInput) && 
                             name.toLowerCase() !== currentInput
                           )
                         : uniqueLedgerClients;
                         
                       if (matchingClients.length > 0) {
                         return (
-                          <div className="absolute z-50 left-0 right-0 top-[100%] mt-1 bg-slate-900 border border-slate-700 rounded-lg shadow-xl max-h-40 overflow-y-auto">
-                            <div className="px-2 py-1 text-[9px] font-bold text-slate-500 bg-slate-950 border-b border-slate-850 tracking-wider">
-                              Select Customer from Ledger
+                          <div 
+                            className="absolute z-50 left-0 right-0 top-[100%] mt-1 border border-slate-750 rounded-lg shadow-2xl max-h-52 overflow-y-auto"
+                            style={{ backgroundColor: '#0f172a', opacity: 1 }}
+                          >
+                            <div 
+                              className="px-3 py-1.5 text-[9px] font-extrabold text-slate-400 border-b border-slate-800 tracking-wider sticky top-0"
+                              style={{ backgroundColor: '#090d16' }}
+                            >
+                              SELECT CUSTOMER FROM LEDGER
                             </div>
                             {matchingClients.map((client, idx) => (
                               <button
@@ -1290,7 +1296,8 @@ export default function App() {
                                 onMouseDown={() => {
                                   handleSelectClientFromLedger(client);
                                 }}
-                                className="w-full text-left px-3 py-2 text-xs text-slate-250 hover:bg-slate-800 transition-colors border-b border-slate-800/40 last:border-0"
+                                className="w-full text-left px-3 py-2 text-xs text-slate-200 hover:bg-slate-800 transition-colors border-b border-slate-800/80 last:border-0 font-medium"
+                                style={{ backgroundColor: '#0f172a' }}
                               >
                                 {client}
                               </button>
@@ -1315,7 +1322,7 @@ export default function App() {
                       const opts = getFieldOptions('addr');
                       if (opts.length > 1) {
                         return (
-                          <div className="mt-1 flex flex-wrap gap-1 items-center bg-slate-950/40 p-1.5 rounded border border-slate-850/50">
+                          <div className="mt-1 flex flex-wrap gap-1 items-center p-1.5 rounded border border-slate-800" style={{ backgroundColor: '#0f172a' }}>
                             <span className="text-[9px] font-bold text-teal-400 uppercase tracking-wider mr-1">Choose Address:</span>
                             {opts.map((opt, idx) => (
                               <button
@@ -1354,7 +1361,7 @@ export default function App() {
                       const opts = getFieldOptions('city');
                       if (opts.length > 1) {
                         return (
-                          <div className="mt-1 flex flex-wrap gap-1 items-center bg-slate-950/40 p-1.5 rounded border border-slate-850/50">
+                          <div className="mt-1 flex flex-wrap gap-1 items-center p-1.5 rounded border border-slate-800" style={{ backgroundColor: '#0f172a' }}>
                             <span className="text-[9px] font-bold text-teal-400 uppercase tracking-wider mr-1">Choose City:</span>
                             {opts.map((opt, idx) => (
                               <button
@@ -1393,7 +1400,7 @@ export default function App() {
                       const opts = getFieldOptions('contact');
                       if (opts.length > 1) {
                         return (
-                          <div className="mt-1 flex flex-wrap gap-1 items-center bg-slate-950/40 p-1.5 rounded border border-slate-850/50">
+                          <div className="mt-1 flex flex-wrap gap-1 items-center p-1.5 rounded border border-slate-800" style={{ backgroundColor: '#0f172a' }}>
                             <span className="text-[9px] font-bold text-teal-400 uppercase tracking-wider mr-1">Choose Contact:</span>
                             {opts.map((opt, idx) => (
                               <button
@@ -1443,7 +1450,7 @@ export default function App() {
                       const opts = getFieldOptions('repName');
                       if (opts.length > 1) {
                         return (
-                          <div className="mt-1 flex flex-wrap gap-1 items-center bg-slate-950/40 p-1.5 rounded border border-slate-850/50">
+                          <div className="mt-1 flex flex-wrap gap-1 items-center p-1.5 rounded border border-slate-800" style={{ backgroundColor: '#0f172a' }}>
                             <span className="text-[9px] font-bold text-teal-400 uppercase tracking-wider mr-1">Choose Sales Rep:</span>
                             {opts.map((opt, idx) => (
                               <button
