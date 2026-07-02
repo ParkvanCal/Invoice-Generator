@@ -1284,8 +1284,8 @@ export default function App() {
                             style={{ backgroundColor: '#0f172a', opacity: 1 }}
                           >
                             <div 
-                              className="px-3 py-1.5 text-[9px] font-extrabold text-slate-400 border-b border-slate-800 tracking-wider sticky top-0"
-                              style={{ backgroundColor: '#090d16' }}
+                              className="px-3 py-1.5 text-[9px] font-extrabold border-b border-slate-800 tracking-wider sticky top-0"
+                              style={{ backgroundColor: '#090d16', color: '#94a3b8' }}
                             >
                               SELECT CUSTOMER FROM LEDGER
                             </div>
@@ -1296,8 +1296,8 @@ export default function App() {
                                 onMouseDown={() => {
                                   handleSelectClientFromLedger(client);
                                 }}
-                                className="w-full text-left px-3 py-2 text-xs text-slate-200 hover:bg-slate-800 transition-colors border-b border-slate-800/80 last:border-0 font-medium"
-                                style={{ backgroundColor: '#0f172a' }}
+                                className="w-full text-left px-3 py-2 text-xs hover:bg-slate-800 transition-colors border-b border-slate-800/80 last:border-0 font-medium cursor-pointer"
+                                style={{ backgroundColor: '#0f172a', color: '#ffffff' }}
                               >
                                 {client}
                               </button>
@@ -1323,7 +1323,7 @@ export default function App() {
                       if (opts.length > 1) {
                         return (
                           <div className="mt-1 flex flex-wrap gap-1 items-center p-1.5 rounded border border-slate-800" style={{ backgroundColor: '#0f172a' }}>
-                            <span className="text-[9px] font-bold text-teal-400 uppercase tracking-wider mr-1">Choose Address:</span>
+                            <span className="text-[9px] font-bold text-teal-400 uppercase tracking-wider mr-1" style={{ color: '#2dd4bf' }}>Choose Address:</span>
                             {opts.map((opt, idx) => (
                               <button
                                 key={idx}
@@ -1334,9 +1334,13 @@ export default function App() {
                                 }}
                                 className={`px-2 py-0.5 rounded text-[10px] border transition-all ${
                                   quoteForm.addr === opt 
-                                    ? 'bg-teal-500/20 text-teal-300 border-teal-500/40 font-semibold' 
-                                    : 'bg-slate-900 text-slate-350 border-slate-800 hover:border-slate-700'
+                                    ? 'border-teal-500/40 font-semibold' 
+                                    : 'border-slate-800 hover:border-slate-700'
                                 }`}
+                                style={{
+                                  color: quoteForm.addr === opt ? '#5eead4' : '#cbd5e1',
+                                  backgroundColor: quoteForm.addr === opt ? 'rgba(20, 184, 166, 0.2)' : '#0f172a'
+                                }}
                               >
                                 {opt}
                               </button>
@@ -1362,7 +1366,7 @@ export default function App() {
                       if (opts.length > 1) {
                         return (
                           <div className="mt-1 flex flex-wrap gap-1 items-center p-1.5 rounded border border-slate-800" style={{ backgroundColor: '#0f172a' }}>
-                            <span className="text-[9px] font-bold text-teal-400 uppercase tracking-wider mr-1">Choose City:</span>
+                            <span className="text-[9px] font-bold text-teal-400 uppercase tracking-wider mr-1" style={{ color: '#2dd4bf' }}>Choose City:</span>
                             {opts.map((opt, idx) => (
                               <button
                                 key={idx}
@@ -1373,9 +1377,13 @@ export default function App() {
                                 }}
                                 className={`px-1.5 py-0.5 rounded text-[10px] border transition-all ${
                                   quoteForm.city === opt 
-                                    ? 'bg-teal-500/20 text-teal-300 border-teal-500/40 font-semibold' 
-                                    : 'bg-slate-900 text-slate-350 border-slate-800 hover:border-slate-700'
+                                    ? 'border-teal-500/40 font-semibold' 
+                                    : 'border-slate-800 hover:border-slate-700'
                                 }`}
+                                style={{
+                                  color: quoteForm.city === opt ? '#5eead4' : '#cbd5e1',
+                                  backgroundColor: quoteForm.city === opt ? 'rgba(20, 184, 166, 0.2)' : '#0f172a'
+                                }}
                               >
                                 {opt}
                               </button>
@@ -1401,7 +1409,7 @@ export default function App() {
                       if (opts.length > 1) {
                         return (
                           <div className="mt-1 flex flex-wrap gap-1 items-center p-1.5 rounded border border-slate-800" style={{ backgroundColor: '#0f172a' }}>
-                            <span className="text-[9px] font-bold text-teal-400 uppercase tracking-wider mr-1">Choose Contact:</span>
+                            <span className="text-[9px] font-bold text-teal-400 uppercase tracking-wider mr-1" style={{ color: '#2dd4bf' }}>Choose Contact:</span>
                             {opts.map((opt, idx) => (
                               <button
                                 key={idx}
@@ -1412,9 +1420,13 @@ export default function App() {
                                 }}
                                 className={`px-1.5 py-0.5 rounded text-[10px] border transition-all ${
                                   quoteForm.contact === opt 
-                                    ? 'bg-teal-500/20 text-teal-300 border-teal-500/40 font-semibold' 
-                                    : 'bg-slate-900 text-slate-350 border-slate-800 hover:border-slate-700'
+                                    ? 'border-teal-500/40 font-semibold' 
+                                    : 'border-slate-800 hover:border-slate-700'
                                 }`}
+                                style={{
+                                  color: quoteForm.contact === opt ? '#5eead4' : '#cbd5e1',
+                                  backgroundColor: quoteForm.contact === opt ? 'rgba(20, 184, 166, 0.2)' : '#0f172a'
+                                }}
                               >
                                 {opt}
                               </button>
@@ -1451,7 +1463,7 @@ export default function App() {
                       if (opts.length > 1) {
                         return (
                           <div className="mt-1 flex flex-wrap gap-1 items-center p-1.5 rounded border border-slate-800" style={{ backgroundColor: '#0f172a' }}>
-                            <span className="text-[9px] font-bold text-teal-400 uppercase tracking-wider mr-1">Choose Sales Rep:</span>
+                            <span className="text-[9px] font-bold text-teal-400 uppercase tracking-wider mr-1" style={{ color: '#2dd4bf' }}>Choose Sales Rep:</span>
                             {opts.map((opt, idx) => (
                               <button
                                 key={idx}
@@ -1462,9 +1474,13 @@ export default function App() {
                                 }}
                                 className={`px-1.5 py-0.5 rounded text-[10px] border transition-all ${
                                   quoteForm.repName === opt 
-                                    ? 'bg-teal-500/20 text-teal-300 border-teal-500/40 font-semibold' 
-                                    : 'bg-slate-900 text-slate-350 border-slate-800 hover:border-slate-700'
+                                    ? 'border-teal-500/40 font-semibold' 
+                                    : 'border-slate-800 hover:border-slate-700'
                                 }`}
+                                style={{
+                                  color: quoteForm.repName === opt ? '#5eead4' : '#cbd5e1',
+                                  backgroundColor: quoteForm.repName === opt ? 'rgba(20, 184, 166, 0.2)' : '#0f172a'
+                                }}
                               >
                                 {opt}
                               </button>
