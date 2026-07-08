@@ -25,6 +25,8 @@ import {
   X
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
 import { JobBookEntry, DocumentDetails, LineItem, DocumentState } from "./types";
 // @ts-ignore
 import companyLogoImage from "./assets/images/company_logo_1780762745301.png";
@@ -154,6 +156,7 @@ export default function App() {
 
   // Selected Quote ID for editing / reviewing
   const [editingQuoteId, setEditingQuoteId] = useState<string | null>(null);
+  const [editedQuoteId, setEditedQuoteId] = useState<string>("");
 
   // Active Invoice inputs
   const [selectedQuoteId, setSelectedQuoteId] = useState<string>("01MAS26");
@@ -347,11 +350,12 @@ export default function App() {
       
       if (editingQuoteId) {
         // Mode: Reviewing/editing an existing quote - update the database & logs
+        const finalQuoteId = editedQuoteId.trim() || editingQuoteId;
         const subtotal = activeQuoteItems.reduce((acc, item) => acc + item.total, 0);
         const updatedQuote = {
-          id: editingQuoteId,
+          id: finalQuoteId,
           details: {
-            jobID: editingQuoteId,
+            jobID: finalQuoteId,
             ...quoteForm
           },
           items: [...activeQuoteItems],
@@ -359,11 +363,12 @@ export default function App() {
         };
 
         setFinalizedQuotes(prev => {
-          return prev.map(q => q.id === editingQuoteId ? updatedQuote : q);
+          const filtered = prev.filter(q => q.id !== editingQuoteId && q.id !== finalQuoteId);
+          return [...filtered, updatedQuote];
         });
 
         const newEntries: JobBookEntry[] = activeQuoteItems.map(item => ({
-          jobID: editingQuoteId,
+          jobID: finalQuoteId,
           clientName: quoteForm.clientName,
           qty: item.qty,
           desc: item.desc,
@@ -372,7 +377,7 @@ export default function App() {
         }));
 
         setJobBook(prev => {
-          const filtered = prev.filter(e => e.jobID !== editingQuoteId);
+          const filtered = prev.filter(e => e.jobID !== editingQuoteId && e.jobID !== finalQuoteId);
           return [...filtered, ...newEntries];
         });
 
@@ -380,14 +385,15 @@ export default function App() {
           type: 'QUOTE',
           details: {
             ...quoteForm,
-            jobID: editingQuoteId
+            jobID: finalQuoteId
           },
           items: [...activeQuoteItems]
         });
 
-        setSelectedQuoteId(editingQuoteId);
+        setSelectedQuoteId(finalQuoteId);
         setEditingQuoteId(null);
-        alert(`Quotation Reference: ${editingQuoteId} has been successfully updated, logged to Job Book, and prepared for printing.`);
+        setEditedQuoteId("");
+        alert(`Quotation Reference: ${finalQuoteId} has been successfully updated, logged to Job Book, and prepared for printing.`);
       } else {
         // Mode: Fresh draft or quick print of an already saved quote.
         const currentID = sheetDoc.details.jobID;
@@ -474,6 +480,319 @@ export default function App() {
     window.print();
   };
 
+  // Trigger modern canvas rendering to PDF (ideal for Android mobile, tablets, and offline downloads)
+  const handleDownloadPDF = async () => {
+    if (sheetDoc.type === 'QUOTE') {
+      if (activeQuoteItems.length === 0) {
+        alert("Please add at least one item before downloading the PDF.");
+        return;
+      }
+      
+      if (editingQuoteId) {
+        // Mode: Reviewing/editing an existing quote - update the database & logs
+        const finalQuoteId = editedQuoteId.trim() || editingQuoteId;
+        const subtotal = activeQuoteItems.reduce((acc, item) => acc + item.total, 0);
+        const updatedQuote = {
+          id: finalQuoteId,
+          details: {
+            jobID: finalQuoteId,
+            ...quoteForm
+          },
+          items: [...activeQuoteItems],
+          subtotal
+        };
+
+        setFinalizedQuotes(prev => {
+          const filtered = prev.filter(q => q.id !== editingQuoteId && q.id !== finalQuoteId);
+          return [...filtered, updatedQuote];
+        });
+
+        const newEntries: JobBookEntry[] = activeQuoteItems.map(item => ({
+          jobID: finalQuoteId,
+          clientName: quoteForm.clientName,
+          qty: item.qty,
+          desc: item.desc,
+          unitPrice: item.unitPrice,
+          total: item.total
+        }));
+
+        setJobBook(prev => {
+          const filtered = prev.filter(e => e.jobID !== editingQuoteId && e.jobID !== finalQuoteId);
+          return [...filtered, ...newEntries];
+        });
+
+        setSheetDoc({
+          type: 'QUOTE',
+          details: {
+            ...quoteForm,
+            jobID: finalQuoteId
+          },
+          items: [...activeQuoteItems]
+        });
+
+        setSelectedQuoteId(finalQuoteId);
+        setEditingQuoteId(null);
+        setEditedQuoteId("");
+        alert(`Quotation Reference: ${finalQuoteId} has been successfully updated, logged to Job Book, and prepared for PDF download.`);
+      } else {
+        // Mode: Fresh draft or quick print of an already saved quote.
+        const currentID = sheetDoc.details.jobID;
+        const existsInLogs = finalizedQuotes.some(q => q.id === currentID && currentID !== "DRAFT" && currentID !== "01MAS26");
+
+        if (existsInLogs) {
+          // Already saved, let's update it in-place to make sure any modifications are synchronized
+          const subtotal = activeQuoteItems.reduce((acc, item) => acc + item.total, 0);
+          const updatedQuote = {
+            id: currentID,
+            details: {
+              jobID: currentID,
+              ...quoteForm
+            },
+            items: [...activeQuoteItems],
+            subtotal
+          };
+
+          setFinalizedQuotes(prev => prev.map(q => q.id === currentID ? updatedQuote : q));
+
+          const newEntries: JobBookEntry[] = activeQuoteItems.map(item => ({
+            jobID: currentID,
+            clientName: quoteForm.clientName,
+            qty: item.qty,
+            desc: item.desc,
+            unitPrice: item.unitPrice,
+            total: item.total
+          }));
+
+          setJobBook(prev => {
+            const filtered = prev.filter(e => e.jobID !== currentID);
+            return [...filtered, ...newEntries];
+          });
+
+          alert(`Changes to saved Quotation ${currentID} have been auto-saved and logged before PDF download.`);
+        } else {
+          // Fresh draft needs a new unique ID and a complete log entry 
+          const generatedID = generateJobID(quoteForm.clientName);
+          
+          const newEntries: JobBookEntry[] = activeQuoteItems.map(item => ({
+            jobID: generatedID,
+            clientName: quoteForm.clientName,
+            qty: item.qty,
+            desc: item.desc,
+            unitPrice: item.unitPrice,
+            total: item.total
+          }));
+
+          setJobBook(prev => [...prev, ...newEntries]);
+
+          const subtotal = activeQuoteItems.reduce((acc, item) => acc + item.total, 0);
+          const newFinalized = {
+            id: generatedID,
+            details: {
+              jobID: generatedID,
+              ...quoteForm
+            },
+            items: [...activeQuoteItems],
+            subtotal
+          };
+
+          setFinalizedQuotes(prev => {
+            const filtered = prev.filter(q => q.id !== generatedID);
+            return [...filtered, newFinalized];
+          });
+
+          setSelectedQuoteId(generatedID);
+
+          setSheetDoc({
+            type: 'QUOTE',
+            details: {
+              ...quoteForm,
+              jobID: generatedID
+            },
+            items: [...activeQuoteItems]
+          });
+
+          alert(`Quotation auto-saved and logged to Job Book under Reference: ${generatedID} before PDF download.`);
+        }
+      }
+    }
+
+    if (!sheetRef.current) return;
+    
+    setIsGeneratingPDF(true);
+    
+    // Helper function to sanitize any OKLCH colors into standard RGB format for html2canvas compatibility
+    const convertOklchToRgb = (cssTextString: string) => {
+      const regex = /oklch\(\s*([\d.]+%?)\s+([\d.]+)\s+([\d.]+)(?:\s*\/\s*([\d.]+%?))?\s*\)/g;
+      return cssTextString.replace(regex, (match, p1, p2, p3, p4) => {
+        try {
+          let l = parseFloat(p1);
+          if (p1.endsWith('%')) l = l / 100;
+          
+          const c = parseFloat(p2);
+          const h = parseFloat(p3);
+          
+          let a = undefined;
+          if (p4) {
+            a = parseFloat(p4);
+            if (p4.endsWith('%')) a = a / 100;
+          }
+          
+          const hRad = (h * Math.PI) / 180;
+          const L = l;
+          const a_lab = c * Math.cos(hRad);
+          const b_lab = c * Math.sin(hRad);
+          
+          const l_lms = L + 0.3963377774 * a_lab + 0.2158037573 * b_lab;
+          const m_lms = L - 0.1055613458 * a_lab - 0.0638541728 * b_lab;
+          const s_lms = L - 0.0894841775 * a_lab - 1.2914855480 * b_lab;
+          
+          const l_cube = l_lms < 0 ? 0 : l_lms * l_lms * l_lms;
+          const m_cube = m_lms < 0 ? 0 : m_lms * m_lms * m_lms;
+          const s_cube = s_lms < 0 ? 0 : s_lms * s_lms * s_lms;
+          
+          const r_lin = +4.0767416621 * l_cube - 3.3077115913 * m_cube + 0.2309699292 * s_cube;
+          const g_lin = -1.2684380046 * l_cube + 2.6097574011 * m_cube - 0.3413193965 * s_cube;
+          const b_lin = -0.0041960863 * l_cube - 0.7034186147 * m_cube + 1.7076147010 * s_cube;
+          
+          const toSRGB = (x: number) => {
+            return x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055;
+          };
+          
+          const r = Math.max(0, Math.min(255, Math.round(toSRGB(r_lin) * 255)));
+          const g = Math.max(0, Math.min(255, Math.round(toSRGB(g_lin) * 255)));
+          const b = Math.max(0, Math.min(255, Math.round(toSRGB(b_lin) * 255)));
+          
+          if (a !== undefined) {
+            return `rgba(${r}, ${g}, ${b}, ${a})`;
+          }
+          return `rgb(${r}, ${g}, ${b})`;
+        } catch (e) {
+          return 'rgb(128, 128, 128)';
+        }
+      });
+    };
+
+    const originalStyleContents = new Map<HTMLStyleElement, string>();
+    const tempInlineStyles: HTMLStyleElement[] = [];
+    const disabledLinks: HTMLLinkElement[] = [];
+
+    try {
+      // 1. Convert any oklch color references in existing style tags
+      const styleTags = Array.from(document.getElementsByTagName('style'));
+      for (const tag of styleTags) {
+        if (tag.innerHTML && tag.innerHTML.includes('oklch')) {
+          originalStyleContents.set(tag, tag.innerHTML);
+          tag.innerHTML = convertOklchToRgb(tag.innerHTML);
+        }
+      }
+
+      // 2. Fetch and inline any linked stylesheets that might contain oklch definitions
+      const linkTags = Array.from(document.getElementsByTagName('link')) as HTMLLinkElement[];
+      for (const link of linkTags) {
+        if (link.rel === 'stylesheet' && link.href) {
+          if (link.href.startsWith(window.location.origin) || !link.href.startsWith('http')) {
+            try {
+              const response = await fetch(link.href);
+              if (response.ok) {
+                let cssText = await response.text();
+                if (cssText.includes('oklch')) {
+                  cssText = convertOklchToRgb(cssText);
+                  const tempStyle = document.createElement('style');
+                  tempStyle.setAttribute('data-temp-sanitized-style', 'true');
+                  tempStyle.innerHTML = cssText;
+                  document.head.appendChild(tempStyle);
+                  tempInlineStyles.push(tempStyle);
+                  
+                  link.disabled = true;
+                  disabledLinks.push(link);
+                }
+              }
+            } catch (err) {
+              console.warn("Failed to fetch/inline stylesheet for PDF generation:", link.href, err);
+            }
+          }
+        }
+      }
+
+      // Small delay to ensure styles propagate and UI transitions complete
+      await new Promise(resolve => setTimeout(resolve, 400));
+      
+      const element = sheetRef.current;
+      
+      const canvas = await html2canvas(element, {
+        scale: 2.2, // high quality
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        scrollX: 0,
+        scrollY: -window.scrollY, // prevent scroll clipping on mobile Android
+        onclone: (clonedDoc) => {
+          // Also double-check all styles and element inline styles in cloned DOM
+          const clonedStyles = Array.from(clonedDoc.getElementsByTagName('style'));
+          for (const styleTag of clonedStyles) {
+            if (styleTag.innerHTML && styleTag.innerHTML.includes('oklch')) {
+              styleTag.innerHTML = convertOklchToRgb(styleTag.innerHTML);
+            }
+          }
+
+          const allEl = Array.from(clonedDoc.getElementsByTagName('*')) as HTMLElement[];
+          for (const el of allEl) {
+            if (el.style) {
+              const cssText = el.style.cssText;
+              if (cssText && cssText.includes('oklch')) {
+                el.style.cssText = convertOklchToRgb(cssText);
+              }
+            }
+          }
+        }
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+      
+      const pdfWidth = 210;
+      const pdfHeight = 297;
+      
+      const imgWidth = pdfWidth;
+      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+      
+      const yOffset = imgHeight < pdfHeight ? (pdfHeight - imgHeight) / 2 : 0;
+      
+      pdf.addImage(imgData, 'PNG', 0, yOffset > 0 ? yOffset : 0, imgWidth, imgHeight);
+      
+      const cleanClient = (sheetDoc.details.clientName || 'CLIENT')
+        .replace(/[^a-zA-Z0-9\s]/g, '')
+        .trim()
+        .replace(/\s+/g, '_')
+        .toUpperCase();
+      const docId = (sheetDoc.details.jobID || 'DOCUMENT').trim().replace(/\s+/g, '_').toUpperCase();
+      const docType = (sheetDoc.type || 'DOCUMENT').trim().toUpperCase();
+      
+      pdf.save(`${docId}_${cleanClient}_${docType}.pdf`);
+    } catch (error) {
+      console.error("PDF generation failed:", error);
+      alert("Failed to generate PDF. Please try the standard 'Print' option.");
+    } finally {
+      // Restore original stylesheets and remove temp styles
+      originalStyleContents.forEach((content, tag) => {
+        tag.innerHTML = content;
+      });
+      tempInlineStyles.forEach(tag => {
+        if (tag.parentNode) tag.parentNode.removeChild(tag);
+      });
+      disabledLinks.forEach(link => {
+        link.disabled = false;
+      });
+      setIsGeneratingPDF(false);
+    }
+  };
+
   // Format utility matching standard Excel accounting
   const formatCurrency = (val: number) => {
     return `${activeCurrency}${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -498,7 +817,7 @@ export default function App() {
 
   // Trigger: Refresh Sheet Preview with Quotation Form values
   const handleUpdateQuotePreview = () => {
-    const jobID = editingQuoteId || generateJobID(quoteForm.clientName);
+    const jobID = editingQuoteId ? (editedQuoteId.trim() || editingQuoteId) : generateJobID(quoteForm.clientName);
     setSheetDoc({
       type: 'QUOTE',
       details: {
@@ -569,6 +888,7 @@ export default function App() {
     if (!quote) return;
     
     setEditingQuoteId(quote.id);
+    setEditedQuoteId(quote.id);
     setQuoteForm({
       clientName: quote.details.clientName,
       addr: quote.details.addr,
@@ -592,6 +912,7 @@ export default function App() {
   // Cancel reviewing/editing a saved quotation and restore to default empty/blank list
   const handleCancelQuoteEdit = () => {
     setEditingQuoteId(null);
+    setEditedQuoteId("");
     setQuoteForm({
       clientName: "",
       addr: "",
@@ -686,6 +1007,7 @@ export default function App() {
     if (!confirmClear) return;
 
     setEditingQuoteId(null);
+    setEditedQuoteId("");
     setQuoteForm({
       clientName: "",
       addr: "",
@@ -725,11 +1047,13 @@ export default function App() {
       return;
     }
 
+    const finalQuoteId = editedQuoteId.trim() || editingQuoteId;
+
     const subtotal = activeQuoteItems.reduce((acc, item) => acc + item.total, 0);
     const updatedQuote = {
-      id: editingQuoteId,
+      id: finalQuoteId,
       details: {
-        jobID: editingQuoteId,
+        jobID: finalQuoteId,
         ...quoteForm
       },
       items: [...activeQuoteItems],
@@ -738,12 +1062,13 @@ export default function App() {
 
     // 1. Update Finalized Quotes
     setFinalizedQuotes(prev => {
-      return prev.map(q => q.id === editingQuoteId ? updatedQuote : q);
+      const filtered = prev.filter(q => q.id !== editingQuoteId && q.id !== finalQuoteId);
+      return [...filtered, updatedQuote];
     });
 
     // 2. Update Job Book records (replace old entries with new ones)
     const newEntries: JobBookEntry[] = activeQuoteItems.map(item => ({
-      jobID: editingQuoteId,
+      jobID: finalQuoteId,
       clientName: quoteForm.clientName,
       qty: item.qty,
       desc: item.desc,
@@ -752,7 +1077,7 @@ export default function App() {
     }));
 
     setJobBook(prev => {
-      const filtered = prev.filter(e => e.jobID !== editingQuoteId);
+      const filtered = prev.filter(e => e.jobID !== editingQuoteId && e.jobID !== finalQuoteId);
       return [...filtered, ...newEntries];
     });
 
@@ -761,19 +1086,20 @@ export default function App() {
       type: 'QUOTE',
       details: {
         ...quoteForm,
-        jobID: editingQuoteId
+        jobID: finalQuoteId
       },
       items: [...activeQuoteItems]
     });
 
     // 4. Update selected quote in invoice dropdown so it works seamlessly
-    setSelectedQuoteId(editingQuoteId);
+    setSelectedQuoteId(finalQuoteId);
 
     // 5. Success alert
-    alert(`Quotation Reference: ${editingQuoteId} has been successfully updated! Generating an invoice from this quotation ID will now reflect all these changes.`);
+    alert(`Quotation Reference: ${finalQuoteId} has been successfully updated! Generating an invoice from this quotation ID will now reflect all these changes.`);
     
     // 6. Clear editing mode
     setEditingQuoteId(null);
+    setEditedQuoteId("");
   };
 
   // Add Item to Quotation Active Draft
@@ -1250,6 +1576,40 @@ export default function App() {
 
                 {/* Form Elements */}
                 <div className="grid grid-cols-2 gap-3 text-xs">
+                  {editingQuoteId && (
+                    <div className="flex flex-col gap-1.5 col-span-2 bg-amber-500/5 border border-amber-500/20 rounded-lg p-3">
+                      <label className="text-amber-400 font-bold uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                        <AlertCircle className="h-3.5 w-3.5" /> Modify Quotation Number
+                      </label>
+                      <input 
+                        type="text" 
+                        value={editedQuoteId}
+                        onChange={(e) => {
+                          const val = e.target.value.toUpperCase();
+                          setEditedQuoteId(val);
+                          // Live update preview!
+                          setSheetDoc(prev => {
+                            if (prev.type === 'QUOTE') {
+                              return {
+                                ...prev,
+                                details: {
+                                  ...prev.details,
+                                  jobID: val
+                                }
+                              };
+                            }
+                            return prev;
+                          });
+                        }}
+                        placeholder="e.g. 01MAS26"
+                        className="bg-slate-950 border border-amber-500/30 rounded px-2.5 py-1.5 text-white focus:outline-none focus:border-amber-500 font-mono text-xs font-semibold"
+                      />
+                      <span className="text-[9px] text-slate-500 italic">
+                        Changing this will rename this quotation across the finalized list and its ledger row entries.
+                      </span>
+                    </div>
+                  )}
+
                   <div className="flex flex-col gap-1 col-span-2 relative">
                     <label className="text-slate-400 font-medium">Customer Name (writes to B9)</label>
                     <input 
@@ -2445,13 +2805,35 @@ export default function App() {
               </div>
             </div>
             
-            <div className="flex items-center gap-2 self-stretch sm:self-auto justify-end">
+            <div className="flex flex-wrap items-center gap-2 self-stretch sm:self-auto justify-end">
+              <button 
+                onClick={handleDownloadPDF}
+                disabled={isGeneratingPDF}
+                className={`bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 text-slate-950 px-3.5 py-1.5 rounded flex items-center gap-1.5 text-xs font-extrabold transition-all cursor-pointer shadow border border-transparent ${
+                  isGeneratingPDF ? 'opacity-70 cursor-wait' : ''
+                }`}
+                id="btn-direct-download-pdf"
+                title="Generates and downloads a perfect single-page PDF directly on your device (highly recommended for Android/mobile)"
+              >
+                {isGeneratingPDF ? (
+                  <>
+                    <RefreshCw className="h-3.5 w-3.5 animate-spin" /> Generating...
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-3.5 w-3.5" /> Download PDF (Android/Mobile)
+                  </>
+                )}
+              </button>
+
               <button 
                 onClick={handlePrintDocument}
-                className="bg-teal-500 text-slate-950 hover:bg-teal-400 px-4 py-1.5 rounded flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer shadow border border-transparent"
+                disabled={isGeneratingPDF}
+                className="bg-slate-800 hover:bg-slate-700 text-slate-100 px-3.5 py-1.5 rounded flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer shadow border border-slate-700"
                 id="btn-native-print"
+                title="Opens the standard system print dialog (may not work inside sandboxed mobile browsers)"
               >
-                <Printer className="h-4 w-4" /> Print / Save PDF via Browser
+                <Printer className="h-3.5 w-3.5 text-slate-400" /> Print / Save via Browser
               </button>
             </div>
           </div>
