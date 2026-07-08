@@ -620,54 +620,125 @@ export default function App() {
     
     setIsGeneratingPDF(true);
     
-    // Helper function to sanitize any OKLCH colors into standard RGB format for html2canvas compatibility
-    const convertOklchToRgb = (cssTextString: string) => {
-      const regex = /oklch\(\s*([\d.]+%?)\s+([\d.]+)\s+([\d.]+)(?:\s*\/\s*([\d.]+%?))?\s*\)/g;
-      return cssTextString.replace(regex, (match, p1, p2, p3, p4) => {
+    // Helper function to sanitize any OKLCH/OKLAB colors into standard RGB format for html2canvas compatibility
+    const convertModernColorsToRgb = (cssTextString: string) => {
+      const toSRGB = (x: number) => {
+        return x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055;
+      };
+
+      const convertToRgbString = (L: number, a_lab: number, b_lab: number, a: number | undefined) => {
+        const l_lms = L + 0.3963377774 * a_lab + 0.2158037573 * b_lab;
+        const m_lms = L - 0.1055613458 * a_lab - 0.0638541728 * b_lab;
+        const s_lms = L - 0.0894841775 * a_lab - 1.2914855480 * b_lab;
+        
+        const l_cube = l_lms < 0 ? 0 : l_lms * l_lms * l_lms;
+        const m_cube = m_lms < 0 ? 0 : m_lms * m_lms * m_lms;
+        const s_cube = s_lms < 0 ? 0 : s_lms * s_lms * s_lms;
+        
+        const r_lin = +4.0767416621 * l_cube - 3.3077115913 * m_cube + 0.2309699292 * s_cube;
+        const g_lin = -1.2684380046 * l_cube + 2.6097574011 * m_cube - 0.3413193965 * s_cube;
+        const b_lin = -0.0041960863 * l_cube - 0.7034186147 * m_cube + 1.7076147010 * s_cube;
+        
+        const r = Math.max(0, Math.min(255, Math.round(toSRGB(r_lin) * 255)));
+        const g = Math.max(0, Math.min(255, Math.round(toSRGB(g_lin) * 255)));
+        const b = Math.max(0, Math.min(255, Math.round(toSRGB(b_lin) * 255)));
+        
+        if (a !== undefined) {
+          return `rgba(${r}, ${g}, ${b}, ${a})`;
+        }
+        return `rgb(${r}, ${g}, ${b})`;
+      };
+
+      // 1. Process OKLCH using a super robust fallback regex
+      let result = cssTextString.replace(/oklch\(([^)]+)\)/g, (match, inner) => {
         try {
-          let l = parseFloat(p1);
-          if (p1.endsWith('%')) l = l / 100;
-          
-          const c = parseFloat(p2);
-          const h = parseFloat(p3);
-          
-          let a = undefined;
-          if (p4) {
-            a = parseFloat(p4);
-            if (p4.endsWith('%')) a = a / 100;
+          const parts = inner.trim().split(/[\s/]+/);
+          if (parts.length >= 3) {
+            let lPart = parts[0];
+            let cPart = parts[1];
+            let hPart = parts[2];
+            let aPart = parts[3];
+
+            let l = parseFloat(lPart);
+            if (lPart.endsWith('%')) l = l / 100;
+            const c = parseFloat(cPart);
+            const h = parseFloat(hPart);
+            
+            let a = undefined;
+            if (aPart) {
+              a = parseFloat(aPart);
+              if (aPart.endsWith('%')) a = a / 100;
+            }
+
+            if (!isNaN(l) && !isNaN(c) && !isNaN(h)) {
+              const hRad = (h * Math.PI) / 180;
+              const a_lab = c * Math.cos(hRad);
+              const b_lab = c * Math.sin(hRad);
+              return convertToRgbString(l, a_lab, b_lab, a);
+            }
           }
-          
-          const hRad = (h * Math.PI) / 180;
-          const L = l;
-          const a_lab = c * Math.cos(hRad);
-          const b_lab = c * Math.sin(hRad);
-          
-          const l_lms = L + 0.3963377774 * a_lab + 0.2158037573 * b_lab;
-          const m_lms = L - 0.1055613458 * a_lab - 0.0638541728 * b_lab;
-          const s_lms = L - 0.0894841775 * a_lab - 1.2914855480 * b_lab;
-          
-          const l_cube = l_lms < 0 ? 0 : l_lms * l_lms * l_lms;
-          const m_cube = m_lms < 0 ? 0 : m_lms * m_lms * m_lms;
-          const s_cube = s_lms < 0 ? 0 : s_lms * s_lms * s_lms;
-          
-          const r_lin = +4.0767416621 * l_cube - 3.3077115913 * m_cube + 0.2309699292 * s_cube;
-          const g_lin = -1.2684380046 * l_cube + 2.6097574011 * m_cube - 0.3413193965 * s_cube;
-          const b_lin = -0.0041960863 * l_cube - 0.7034186147 * m_cube + 1.7076147010 * s_cube;
-          
-          const toSRGB = (x: number) => {
-            return x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055;
-          };
-          
-          const r = Math.max(0, Math.min(255, Math.round(toSRGB(r_lin) * 255)));
-          const g = Math.max(0, Math.min(255, Math.round(toSRGB(g_lin) * 255)));
-          const b = Math.max(0, Math.min(255, Math.round(toSRGB(b_lin) * 255)));
-          
-          if (a !== undefined) {
-            return `rgba(${r}, ${g}, ${b}, ${a})`;
-          }
-          return `rgb(${r}, ${g}, ${b})`;
+          return 'rgb(100, 116, 139)'; // Slate fallback for unparseable complex dynamic values
         } catch (e) {
-          return 'rgb(128, 128, 128)';
+          return 'rgb(100, 116, 139)';
+        }
+      });
+
+      // 2. Process OKLAB using a super robust fallback regex
+      result = result.replace(/oklab\(([^)]+)\)/g, (match, inner) => {
+        try {
+          const parts = inner.trim().split(/[\s/]+/);
+          if (parts.length >= 3) {
+            let lPart = parts[0];
+            let aPart = parts[1];
+            let bPart = parts[2];
+            let alphaPart = parts[3];
+
+            let l = parseFloat(lPart);
+            if (lPart.endsWith('%')) l = l / 100;
+            const a_lab = parseFloat(aPart);
+            const b_lab = parseFloat(bPart);
+            
+            let alpha = undefined;
+            if (alphaPart) {
+              alpha = parseFloat(alphaPart);
+              if (alphaPart.endsWith('%')) alpha = alpha / 100;
+            }
+
+            if (!isNaN(l) && !isNaN(a_lab) && !isNaN(b_lab)) {
+              return convertToRgbString(l, a_lab, b_lab, alpha);
+            }
+          }
+          return 'rgb(100, 116, 139)'; // Slate fallback for unparseable complex dynamic values
+        } catch (e) {
+          return 'rgb(100, 116, 139)';
+        }
+      });
+
+      return result;
+    };
+
+    const originalGetComputedStyle = window.getComputedStyle;
+    window.getComputedStyle = function(elt, pseudoElt) {
+      const style = originalGetComputedStyle.call(window, elt, pseudoElt);
+      return new Proxy(style, {
+        get(target, prop, receiver) {
+          if (prop === 'getPropertyValue') {
+            return function(propertyName: string) {
+              const value = target.getPropertyValue(propertyName);
+              if (typeof value === 'string' && (value.includes('oklch') || value.includes('oklab'))) {
+                return convertModernColorsToRgb(value);
+              }
+              return value;
+            };
+          }
+          const value = target[prop as any];
+          if (typeof value === 'string' && (value.includes('oklch') || value.includes('oklab'))) {
+            return convertModernColorsToRgb(value);
+          }
+          if (typeof value === 'function') {
+            return value.bind(target);
+          }
+          return value;
         }
       });
     };
@@ -677,16 +748,16 @@ export default function App() {
     const disabledLinks: HTMLLinkElement[] = [];
 
     try {
-      // 1. Convert any oklch color references in existing style tags
+      // 1. Convert any oklch/oklab color references in existing style tags
       const styleTags = Array.from(document.getElementsByTagName('style'));
       for (const tag of styleTags) {
-        if (tag.innerHTML && tag.innerHTML.includes('oklch')) {
+        if (tag.innerHTML && (tag.innerHTML.includes('oklch') || tag.innerHTML.includes('oklab'))) {
           originalStyleContents.set(tag, tag.innerHTML);
-          tag.innerHTML = convertOklchToRgb(tag.innerHTML);
+          tag.innerHTML = convertModernColorsToRgb(tag.innerHTML);
         }
       }
 
-      // 2. Fetch and inline any linked stylesheets that might contain oklch definitions
+      // 2. Fetch and inline any linked stylesheets that might contain oklch/oklab definitions
       const linkTags = Array.from(document.getElementsByTagName('link')) as HTMLLinkElement[];
       for (const link of linkTags) {
         if (link.rel === 'stylesheet' && link.href) {
@@ -695,8 +766,8 @@ export default function App() {
               const response = await fetch(link.href);
               if (response.ok) {
                 let cssText = await response.text();
-                if (cssText.includes('oklch')) {
-                  cssText = convertOklchToRgb(cssText);
+                if (cssText.includes('oklch') || cssText.includes('oklab')) {
+                  cssText = convertModernColorsToRgb(cssText);
                   const tempStyle = document.createElement('style');
                   tempStyle.setAttribute('data-temp-sanitized-style', 'true');
                   tempStyle.innerHTML = cssText;
@@ -728,11 +799,41 @@ export default function App() {
         scrollX: 0,
         scrollY: -window.scrollY, // prevent scroll clipping on mobile Android
         onclone: (clonedDoc) => {
+          // Override getComputedStyle for the cloned window context
+          const clonedWindow = clonedDoc.defaultView;
+          if (clonedWindow) {
+            const originalClonedGetComputedStyle = clonedWindow.getComputedStyle;
+            clonedWindow.getComputedStyle = function(elt, pseudoElt) {
+              const style = originalClonedGetComputedStyle.call(clonedWindow, elt, pseudoElt);
+              return new Proxy(style, {
+                get(target, prop, receiver) {
+                  if (prop === 'getPropertyValue') {
+                    return function(propertyName: string) {
+                      const value = target.getPropertyValue(propertyName);
+                      if (typeof value === 'string' && (value.includes('oklch') || value.includes('oklab'))) {
+                        return convertModernColorsToRgb(value);
+                      }
+                      return value;
+                    };
+                  }
+                  const value = target[prop as any];
+                  if (typeof value === 'string' && (value.includes('oklch') || value.includes('oklab'))) {
+                    return convertModernColorsToRgb(value);
+                  }
+                  if (typeof value === 'function') {
+                    return value.bind(target);
+                  }
+                  return value;
+                }
+              });
+            };
+          }
+
           // Also double-check all styles and element inline styles in cloned DOM
           const clonedStyles = Array.from(clonedDoc.getElementsByTagName('style'));
           for (const styleTag of clonedStyles) {
-            if (styleTag.innerHTML && styleTag.innerHTML.includes('oklch')) {
-              styleTag.innerHTML = convertOklchToRgb(styleTag.innerHTML);
+            if (styleTag.innerHTML && (styleTag.innerHTML.includes('oklch') || styleTag.innerHTML.includes('oklab'))) {
+              styleTag.innerHTML = convertModernColorsToRgb(styleTag.innerHTML);
             }
           }
 
@@ -740,8 +841,8 @@ export default function App() {
           for (const el of allEl) {
             if (el.style) {
               const cssText = el.style.cssText;
-              if (cssText && cssText.includes('oklch')) {
-                el.style.cssText = convertOklchToRgb(cssText);
+              if (cssText && (cssText.includes('oklch') || cssText.includes('oklab'))) {
+                el.style.cssText = convertModernColorsToRgb(cssText);
               }
             }
           }
@@ -779,6 +880,9 @@ export default function App() {
       console.error("PDF generation failed:", error);
       alert("Failed to generate PDF. Please try the standard 'Print' option.");
     } finally {
+      // Restore original getComputedStyle
+      window.getComputedStyle = originalGetComputedStyle;
+
       // Restore original stylesheets and remove temp styles
       originalStyleContents.forEach((content, tag) => {
         tag.innerHTML = content;
