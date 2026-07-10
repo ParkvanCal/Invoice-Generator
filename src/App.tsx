@@ -125,7 +125,9 @@ export default function App() {
     city: "Harare",
     contact: "Natasha",
     repName: "Upenyu",
-    date: "2026-04-29"
+    date: "2026-04-29",
+    workStatus: "None",
+    downPayment: 0
   });
 
   // Items currently being build in Quotation creator
@@ -173,7 +175,9 @@ export default function App() {
       city: "Harare",
       contact: "Natasha",
       repName: "Upenyu",
-      date: "2026-04-29"
+      date: "2026-04-29",
+      workStatus: "None",
+      downPayment: 0
     },
     items: [
       { id: "1", qty: 1, desc: "Calibration of 5000 Liter Bowser MFB 005", unitPrice: 150.00, total: 150.00 },
@@ -999,7 +1003,9 @@ export default function App() {
       city: quote.details.city,
       contact: quote.details.contact,
       repName: quote.details.repName,
-      date: quote.details.date
+      date: quote.details.date,
+      workStatus: quote.details.workStatus || "None",
+      downPayment: quote.details.downPayment || 0
     });
     setActiveQuoteItems([...quote.items]);
     
@@ -1023,7 +1029,9 @@ export default function App() {
       city: "",
       contact: "",
       repName: "",
-      date: new Date().toISOString().split('T')[0]
+      date: new Date().toISOString().split('T')[0],
+      workStatus: "None",
+      downPayment: 0
     });
     setActiveQuoteItems([]);
     
@@ -1037,7 +1045,9 @@ export default function App() {
         city: "",
         contact: "",
         repName: "",
-        date: new Date().toISOString().split('T')[0]
+        date: new Date().toISOString().split('T')[0],
+        workStatus: "None",
+        downPayment: 0
       },
       items: []
     });
@@ -1118,7 +1128,9 @@ export default function App() {
       city: "",
       contact: "",
       repName: "",
-      date: new Date().toISOString().split('T')[0]
+      date: new Date().toISOString().split('T')[0],
+      workStatus: "None",
+      downPayment: 0
     });
     setActiveQuoteItems([]);
     setQuoteComments([
@@ -1137,7 +1149,9 @@ export default function App() {
         city: "",
         contact: "",
         repName: "",
-        date: new Date().toISOString().split('T')[0]
+        date: new Date().toISOString().split('T')[0],
+        workStatus: "None",
+        downPayment: 0
       },
       items: []
     });
@@ -1955,6 +1969,67 @@ export default function App() {
                       return null;
                     })()}
                   </div>
+
+                  {/* Additional Work done/not done toggle and Down Payment */}
+                  <div className="col-span-2 border-t border-slate-800/80 pt-3.5 mt-1 flex flex-col gap-3">
+                    <span className="text-[11px] text-teal-400 font-extrabold uppercase tracking-wider flex items-center gap-1.5 select-none">
+                      <TrendingUp className="h-3.5 w-3.5 text-teal-400" />
+                      Work Status & Payment (Optional)
+                    </span>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-slate-450 font-medium">Additional Work Status</label>
+                        <select
+                          id="sel-work-status"
+                          value={quoteForm.workStatus || "None"}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setQuoteForm(prev => ({ ...prev, workStatus: val }));
+                            setSheetDoc(prev => ({
+                              ...prev,
+                              details: {
+                                ...prev.details,
+                                workStatus: val
+                              }
+                            }));
+                          }}
+                          className="bg-slate-950 border border-slate-800 text-white rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-teal-500 font-sans"
+                        >
+                          <option value="None">None (Do not display)</option>
+                          <option value="Done">Yes (Done / Completed)</option>
+                          <option value="Not Done">No (Not Done / Pending)</option>
+                        </select>
+                      </div>
+
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-slate-450 font-medium">Down / Part Payment</label>
+                        <div className="relative">
+                          <span className="absolute left-2.5 top-2.5 text-slate-500 text-xs font-mono">{activeCurrency}</span>
+                          <input 
+                            id="num-down-payment"
+                            type="number" 
+                            min="0"
+                            step="0.01"
+                            placeholder="0.00"
+                            value={quoteForm.downPayment === 0 ? "" : quoteForm.downPayment}
+                            onChange={(e) => {
+                              const val = Math.max(0, Number(e.target.value));
+                              setQuoteForm(prev => ({ ...prev, downPayment: val }));
+                              setSheetDoc(prev => ({
+                                ...prev,
+                                details: {
+                                  ...prev.details,
+                                  downPayment: val
+                                }
+                              }));
+                            }}
+                            className="bg-slate-950 border border-slate-800 rounded-lg pl-7 pr-2.5 py-1.5 text-white focus:outline-none focus:border-teal-500 w-full text-xs font-mono"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <hr className="border-slate-800" />
@@ -2429,6 +2504,61 @@ export default function App() {
                       }}
                       className="bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 text-white focus:outline-none font-mono"
                     />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2.5 border-t border-slate-800/80 pt-2.5 mt-0.5">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-slate-450">Additional Work Done?</label>
+                      <select
+                        id="sel-work-status-invoice"
+                        value={sheetDoc.details.workStatus || "None"}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setSheetDoc(prev => ({
+                            ...prev,
+                            details: {
+                              ...prev.details,
+                              workStatus: val
+                            }
+                          }));
+                          // Also sync to form
+                          setQuoteForm(prev => ({ ...prev, workStatus: val }));
+                        }}
+                        className="bg-slate-900 border border-slate-800 text-slate-300 rounded px-2.5 py-1.5 text-xs focus:outline-none focus:border-teal-500 font-sans"
+                      >
+                        <option value="None">None (Do not display)</option>
+                        <option value="Done">Yes (Done / Completed)</option>
+                        <option value="Not Done">No (Not Done / Pending)</option>
+                      </select>
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      <label className="text-slate-450 font-medium">Down / Part Payment</label>
+                      <div className="relative">
+                        <span className="absolute left-2.5 top-1.5 text-slate-500 text-xs font-mono">{activeCurrency}</span>
+                        <input 
+                          id="num-down-payment-invoice"
+                          type="number" 
+                          min="0"
+                          step="0.01"
+                          placeholder="0.00"
+                          value={sheetDoc.details.downPayment === 0 || !sheetDoc.details.downPayment ? "" : sheetDoc.details.downPayment}
+                          onChange={(e) => {
+                            const val = Math.max(0, Number(e.target.value));
+                            setSheetDoc(prev => ({
+                              ...prev,
+                              details: {
+                                ...prev.details,
+                                downPayment: val
+                              }
+                            }));
+                            // Also sync to form
+                            setQuoteForm(prev => ({ ...prev, downPayment: val }));
+                          }}
+                          className="bg-slate-900 border border-slate-800 rounded pl-7 pr-2.5 py-1.5 text-white focus:outline-none text-xs font-mono w-full"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -3147,7 +3277,7 @@ export default function App() {
                           <span className={`flex-1 pl-4 py-1.5 flex items-center text-zinc-800 font-extrabold select-all ${isVeryCrowded ? 'text-[11px]' : 'text-[11.5px]'}`}>{sheetDoc.details.repName}</span>
                         </div>
                         
-                        <div className="flex items-stretch flex-1" id="metadata-row-ref">
+                        <div className={`flex items-stretch flex-1 ${sheetDoc.details.workStatus && sheetDoc.details.workStatus !== "None" ? 'border-b border-[#d4d4d8]' : ''}`} id="metadata-row-ref">
                           <span className="w-24 pl-3 py-1.5 font-bold text-zinc-655 uppercase tracking-tight text-[9px] select-none border-r border-[#d4d4d8] flex items-center bg-zinc-50/70">
                             {sheetDoc.type !== 'QUOTE' ? "Order #" : "Ref"}
                           </span>
@@ -3155,6 +3285,17 @@ export default function App() {
                             {sheetDoc.type !== 'QUOTE' ? (sheetDoc.details.orderNum || 'Verbal') : sheetDoc.details.jobID}
                           </span>
                         </div>
+                        
+                        {sheetDoc.details.workStatus && sheetDoc.details.workStatus !== "None" && (
+                          <div className="flex items-stretch flex-1" id="metadata-row-workstatus">
+                            <span className="w-24 pl-3 py-1.5 font-bold text-zinc-655 uppercase tracking-tight text-[9px] select-none border-r border-[#d4d4d8] flex items-center bg-zinc-50/70">
+                              Add. Work
+                            </span>
+                            <span className={`flex-1 pl-4 py-1.5 flex items-center font-black uppercase text-[10px] select-all ${sheetDoc.details.workStatus === 'Done' ? 'text-emerald-700' : 'text-red-650'}`}>
+                              {sheetDoc.details.workStatus === 'Done' ? '✓ DONE (COMPLETED)' : '✗ NOT DONE (PENDING)'}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -3205,10 +3346,23 @@ export default function App() {
                         <span className="flex-1 text-zinc-800 font-bold select-text">{sheetDoc.details.repName}</span>
                       </div>
                       
-                      {sheetDoc.type !== 'QUOTE' && (
-                        <div className="flex py-1.5 items-center font-sans text-left">
+                      {sheetDoc.type !== 'QUOTE' ? (
+                        <div className={`flex py-1.5 items-center font-sans text-left ${sheetDoc.details.workStatus && sheetDoc.details.workStatus !== "None" ? 'border-b border-dotted border-zinc-200' : ''}`}>
                           <span className="w-16 font-bold text-zinc-500 uppercase tracking-tight text-[10px]">Order #</span>
                           <span className="flex-1 text-[#0A2E5C] font-extrabold font-mono select-text">{sheetDoc.details.orderNum || 'Verbal'}</span>
+                        </div>
+                      ) : (
+                        sheetDoc.details.workStatus && sheetDoc.details.workStatus !== "None" ? null : (
+                          <div className="h-6 print:hidden"></div>
+                        )
+                      )}
+
+                      {sheetDoc.details.workStatus && sheetDoc.details.workStatus !== "None" && (
+                        <div className="flex py-1.5 items-center font-sans text-left animate-fade-in">
+                          <span className="w-16 font-bold text-zinc-500 uppercase tracking-tight text-[10px]">Add. Work</span>
+                          <span className={`flex-1 font-extrabold text-[11px] select-text uppercase ${sheetDoc.details.workStatus === 'Done' ? 'text-emerald-700' : 'text-red-700'}`}>
+                            {sheetDoc.details.workStatus === 'Done' ? 'DONE' : 'NOT DONE'}
+                          </span>
                         </div>
                       )}
                     </div>
@@ -3337,12 +3491,30 @@ export default function App() {
                         </div>
                       </>
                     ) : (
-                      <div className="w-full flex text-[10px] border-l border-r border-b border-[#09090b] bg-zinc-50/40">
-                        <div className="w-[10%]"></div>
-                        <div className="w-[55%]"></div>
-                        <div className="w-[17%] text-[#0A2E5C] pr-4 font-black uppercase tracking-wider select-none flex items-center justify-end h-9">Subtotal</div>
-                        <div className="w-[18%] text-right pr-4 font-mono font-black text-[#09090b] text-[11px] border-l border-[#cbd5e1] flex items-center justify-end h-9">{formatCurrency(currentQuoteSubtotal)}</div>
-                      </div>
+                      <>
+                        <div className="w-full flex text-[10px] border-l border-r border-b border-[#09090b] bg-zinc-50/40">
+                          <div className="w-[10%]"></div>
+                          <div className="w-[55%]"></div>
+                          <div className="w-[17%] text-[#0A2E5C] pr-4 font-black uppercase tracking-wider select-none flex items-center justify-end h-9">Subtotal</div>
+                          <div className="w-[18%] text-right pr-4 font-mono font-black text-[#09090b] text-[11px] border-l border-[#cbd5e1] flex items-center justify-end h-9">{formatCurrency(currentQuoteSubtotal)}</div>
+                        </div>
+                        {sheetDoc.details.downPayment && sheetDoc.details.downPayment > 0 ? (
+                          <>
+                            <div className="w-full flex text-[10px] border-l border-r border-b border-[#09090b] bg-emerald-50/20" id="pdf-row-downpayment">
+                              <div className="w-[10%]"></div>
+                              <div className="w-[55%]"></div>
+                              <div className="w-[17%] text-emerald-850 pr-4 font-bold uppercase tracking-wider select-none flex items-center justify-end h-8">Down Payment</div>
+                              <div className="w-[18%] text-right pr-4 font-mono text-zinc-700 text-[10.5px] border-l border-[#cbd5e1] flex items-center justify-end h-8">{formatCurrency(sheetDoc.details.downPayment)}</div>
+                            </div>
+                            <div className="w-full flex text-[10px] border-l border-r border-b border-[#09090b] bg-teal-50/30" id="pdf-row-balancedue">
+                              <div className="w-[10%]"></div>
+                              <div className="w-[55%]"></div>
+                              <div className="w-[17%] text-teal-950 pr-4 font-black uppercase tracking-wider select-none flex items-center justify-end h-9">Balance Due</div>
+                              <div className="w-[18%] text-right pr-4 font-mono font-black text-teal-950 text-[11.5px] border-l border-[#cbd5e1] flex items-center justify-end h-9">{formatCurrency(currentQuoteSubtotal - sheetDoc.details.downPayment)}</div>
+                            </div>
+                          </>
+                        ) : null}
+                      </>
                     )}
                   </div>
                 </div>
@@ -3412,6 +3584,48 @@ export default function App() {
                   </div>
                 )}
 
+                {excelStyleMode === 'excel' && sheetDoc.details.downPayment && sheetDoc.details.downPayment > 0 ? (
+                  <>
+                    {/* Row 32B: DOWN PAYMENT */}
+                    <div className="flex w-full items-stretch border-l border-b border-[#cbd5e1]" id="excel-row-32b">
+                      <div className="w-8 flex-shrink-0 bg-[#f8f9fa] border-r border-b border-[#cbd5e1] font-mono text-[9px] text-zinc-500 flex items-center justify-center font-bold select-none py-1.5 print:hidden">
+                        32B
+                      </div>
+                      <div className="flex-1 flex items-stretch min-w-0">
+                        <div className="w-[10%] border-r border-b border-[#cbd5e1] bg-[#f1f5f9]"></div>
+                        <div className="w-[55%] border-r border-b border-[#cbd5e1] px-3 py-1 flex items-center font-mono text-zinc-400 text-[9px] select-none">
+                          DOWN PAYMENT / PART PAYMENT MADE
+                        </div>
+                        <div className="w-[17%] border-r border-b border-[#cbd5e1] px-3 py-1 font-bold text-[9px] text-slate-500 text-right flex items-center justify-end uppercase bg-zinc-100 font-mono">
+                          DOWN PAYMENT
+                        </div>
+                        <div className="w-[18%] border-b border-[#cbd5e1] bg-emerald-50/20 px-3 py-1 font-mono text-[11px] font-bold text-slate-700 text-right flex items-center justify-end">
+                          {formatCurrency(sheetDoc.details.downPayment)}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Row 32C: BALANCE OUTSTANDING */}
+                    <div className="flex w-full items-stretch border-l border-b border-[#cbd5e1]" id="excel-row-32c">
+                      <div className="w-8 flex-shrink-0 bg-[#f8f9fa] border-r border-b border-[#cbd5e1] font-mono text-[9px] text-zinc-500 flex items-center justify-center font-bold select-none py-1.5 print:hidden">
+                        32C
+                      </div>
+                      <div className="flex-1 flex items-stretch min-w-0">
+                        <div className="w-[10%] border-r border-b border-[#cbd5e1] bg-[#f1f5f9]"></div>
+                        <div className="w-[55%] border-r border-b border-[#cbd5e1] px-3 py-1 flex items-center font-mono text-indigo-650 text-[9px] select-none">
+                          =J32-J33 <span className="font-sans font-normal text-zinc-400 text-[8px] ml-1">(Grand Total minus Down Payment)</span>
+                        </div>
+                        <div className="w-[17%] border-r border-b border-[#cbd5e1] px-3 py-1 font-black text-[9px] text-[#0A2E5C] text-right flex items-center justify-end uppercase bg-zinc-100 font-mono">
+                          BALANCE DUE
+                        </div>
+                        <div className="w-[18%] border-b-2 border-double border-[#0f172a] bg-teal-50/10 px-3 py-1 font-mono text-[12px] font-black text-teal-950 text-right flex items-center justify-end">
+                          {formatCurrency(grandTotalResult - sheetDoc.details.downPayment)}
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : null}
+
                 {/* ROW 33 to 35: Footer notes and signature spaces */}
                 <div className={`flex w-full items-stretch ${excelStyleMode === 'excel' ? 'border-l border-b border-[#cbd5e1]' : isVeryCrowded ? 'mt-2 pt-2 border-t border-dashed border-[#e4e4e7]' : isCrowded ? 'mt-4 pt-4 border-t border-dashed border-[#e4e4e7]' : 'mt-8 pt-6 border-t border-dashed border-[#e4e4e7]'}`} id="excel-row-33">
                   {excelStyleMode === 'excel' && (
@@ -3474,10 +3688,8 @@ export default function App() {
                                     <div className="border-r border-[#a1a1aa] w-12 h-4 bg-zinc-100"></div>
                                     <div className="w-12 h-4 bg-zinc-100"></div>
                                   </div>
-                                </div>
-
-                                {/* GRAND TOTAL box filled with yellow bg and thick black border */}
-                                <div className={`flex items-center justify-end gap-3 ${isVeryCrowded ? 'mb-2.5' : 'mb-5'}`}>
+                                   {/* GRAND TOTAL box filled with yellow bg and thick black border */}
+                                <div className={`flex items-center justify-end gap-3 ${sheetDoc.details.downPayment && sheetDoc.details.downPayment > 0 ? 'mb-1.5' : isVeryCrowded ? 'mb-2.5' : 'mb-5'}`}>
                                   <span className="font-black text-[11.5px] text-zinc-950 uppercase tracking-widest leading-none">
                                     GRAND TOTAL:
                                   </span>
@@ -3490,6 +3702,40 @@ export default function App() {
                                     </span>
                                   </div>
                                 </div>
+
+                                {sheetDoc.details.downPayment && sheetDoc.details.downPayment > 0 ? (
+                                  <>
+                                    {/* Down Payment Box */}
+                                    <div className={`flex items-center justify-end gap-3 ${isVeryCrowded ? 'mb-1.5' : 'mb-2'}`}>
+                                      <span className="font-black text-[10.5px] text-zinc-650 uppercase tracking-wider leading-none">
+                                        DOWN PAYMENT:
+                                      </span>
+                                      <div className="border border-[#09090b] bg-emerald-50/40 px-3.5 py-1 flex items-center justify-between shadow-3xs" style={{ minWidth: '135px' }}>
+                                        <span className="font-bold text-[11px] text-zinc-650">
+                                          {activeCurrency}
+                                        </span>
+                                        <span className="font-bold font-mono text-[11.5px] text-zinc-700 text-right">
+                                          {sheetDoc.details.downPayment.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </span>
+                                      </div>
+                                    </div>
+
+                                    {/* Balance Box */}
+                                    <div className={`flex items-center justify-end gap-3 ${isVeryCrowded ? 'mb-2.5' : 'mb-5'}`}>
+                                      <span className="font-black text-[11.5px] text-zinc-955 uppercase tracking-widest leading-none">
+                                        BALANCE DUE:
+                                      </span>
+                                      <div className="border-[2px] border-[#09090b] bg-teal-50 px-3.5 py-1.5 flex items-center justify-between shadow-3xs" style={{ minWidth: '135px' }}>
+                                        <span className="font-black text-[12px] text-teal-955">
+                                          {activeCurrency}
+                                        </span>
+                                        <span className="font-black font-mono text-[12.5px] text-teal-955 text-right">
+                                          {(grandTotalResult - sheetDoc.details.downPayment).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </>
+                                ) : null}                               </div>
 
                                 {/* Light cyan Thank you banner */}
                                 <div className={`w-full text-center bg-[#CCFFFA]/30 border-[1.5px] border-[#09090b] rounded-none font-sans font-black text-zinc-950 text-[12px] tracking-widest uppercase select-none shadow-3xs ${isVeryCrowded ? 'py-1.5' : 'py-3'}`}>

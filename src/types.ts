@@ -16,6 +16,9 @@ export interface DocumentDetails {
   date: string;
   orderNum?: string;
   jobID: string;
+  workStatus?: string; // Optional: Done, Not Done, None, etc.
+  downPayment?: number; // Optional down/part payment
+  balance?: number; // Optional balance outstanding
 }
 
 export interface LineItem {
