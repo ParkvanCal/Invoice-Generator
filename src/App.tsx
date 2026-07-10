@@ -3470,54 +3470,50 @@ export default function App() {
                 })}
 
                 {/* ROW 29: Floating SUBTOTAL row linked explicitly inside range sum limits */}
-                <div className={`flex w-full items-stretch ${excelStyleMode === 'excel' ? 'border-l border-b border-[#cbd5e1] bg-zinc-50/50' : ''}`} id="excel-row-29">
-                  {excelStyleMode === 'excel' && (
+                {excelStyleMode === 'excel' ? (
+                  <div className="flex w-full items-stretch border-l border-b border-[#cbd5e1] bg-zinc-50/50" id="excel-row-29">
                     <div className="w-8 flex-shrink-0 bg-[#f8f9fa] border-r border-b border-[#cbd5e1] font-mono text-[9px] text-zinc-500 flex items-center justify-center font-bold select-none py-1.5 print:hidden">
                       29
                     </div>
-                  )}
-                  <div className="flex-1 flex items-stretch min-w-0">
-                    {excelStyleMode === 'excel' ? (
+                    <div className="flex-1 flex items-stretch min-w-0">
+                      <div className="w-[10%] border-r border-b border-[#cbd5e1]"></div>
+                      <div className="w-[55%] border-r border-b border-[#cbd5e1] px-3 py-1 flex items-center justify-end font-bold text-[9px] text-slate-500 uppercase tracking-widest bg-zinc-100">
+                        SUBTOTAL: RANGE J15:J28
+                      </div>
+                      <div className="w-[17%] border-r border-b border-[#cbd5e1] px-3 bg-zinc-100 flex items-center justify-end font-mono text-[9px] text-zinc-400 uppercase tracking-wider select-none">
+                        SUM
+                      </div>
+                      <div className="w-[18%] border-b border-[#cbd5e1] px-3 py-1 font-mono text-[11px] font-extrabold text-[#115e59] text-right bg-emerald-50/10 flex items-center justify-end">
+                        {formatCurrency(currentQuoteSubtotal)}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col w-full" id="pdf-rows-totals">
+                    <div className="w-full flex text-[10px] border-l border-r border-b border-[#09090b] bg-zinc-50/40">
+                      <div className="w-[10%]"></div>
+                      <div className="w-[55%]"></div>
+                      <div className="w-[17%] text-[#0A2E5C] pr-4 font-black uppercase tracking-wider select-none flex items-center justify-end h-9">Subtotal</div>
+                      <div className="w-[18%] text-right pr-4 font-mono font-black text-[#09090b] text-[11px] border-l border-[#cbd5e1] flex items-center justify-end h-9">{formatCurrency(currentQuoteSubtotal)}</div>
+                    </div>
+                    {sheetDoc.details.downPayment && sheetDoc.details.downPayment > 0 ? (
                       <>
-                        <div className="w-[10%] border-r border-b border-[#cbd5e1]"></div>
-                        <div className="w-[55%] border-r border-b border-[#cbd5e1] px-3 py-1 flex items-center justify-end font-bold text-[9px] text-slate-500 uppercase tracking-widest bg-zinc-100">
-                          SUBTOTAL: RANGE J15:J28
-                        </div>
-                        <div className="w-[17%] border-r border-b border-[#cbd5e1] px-3 bg-zinc-100 flex items-center justify-end font-mono text-[9px] text-zinc-400 uppercase tracking-wider select-none">
-                          SUM
-                        </div>
-                        <div className="w-[18%] border-b border-[#cbd5e1] px-3 py-1 font-mono text-[11px] font-extrabold text-[#115e59] text-right bg-emerald-50/10 flex items-center justify-end">
-                          {formatCurrency(currentQuoteSubtotal)}
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="w-full flex text-[10px] border-l border-r border-b border-[#09090b] bg-zinc-50/40">
+                        <div className="w-full flex text-[10px] border-l border-r border-b border-[#09090b] bg-emerald-50/20" id="pdf-row-downpayment">
                           <div className="w-[10%]"></div>
                           <div className="w-[55%]"></div>
-                          <div className="w-[17%] text-[#0A2E5C] pr-4 font-black uppercase tracking-wider select-none flex items-center justify-end h-9">Subtotal</div>
-                          <div className="w-[18%] text-right pr-4 font-mono font-black text-[#09090b] text-[11px] border-l border-[#cbd5e1] flex items-center justify-end h-9">{formatCurrency(currentQuoteSubtotal)}</div>
+                          <div className="w-[17%] text-emerald-850 pr-4 font-bold uppercase tracking-wider select-none flex items-center justify-end h-8">Down Payment</div>
+                          <div className="w-[18%] text-right pr-4 font-mono text-zinc-700 text-[10.5px] border-l border-[#cbd5e1] flex items-center justify-end h-8">{formatCurrency(sheetDoc.details.downPayment)}</div>
                         </div>
-                        {sheetDoc.details.downPayment && sheetDoc.details.downPayment > 0 ? (
-                          <>
-                            <div className="w-full flex text-[10px] border-l border-r border-b border-[#09090b] bg-emerald-50/20" id="pdf-row-downpayment">
-                              <div className="w-[10%]"></div>
-                              <div className="w-[55%]"></div>
-                              <div className="w-[17%] text-emerald-850 pr-4 font-bold uppercase tracking-wider select-none flex items-center justify-end h-8">Down Payment</div>
-                              <div className="w-[18%] text-right pr-4 font-mono text-zinc-700 text-[10.5px] border-l border-[#cbd5e1] flex items-center justify-end h-8">{formatCurrency(sheetDoc.details.downPayment)}</div>
-                            </div>
-                            <div className="w-full flex text-[10px] border-l border-r border-b border-[#09090b] bg-teal-50/30" id="pdf-row-balancedue">
-                              <div className="w-[10%]"></div>
-                              <div className="w-[55%]"></div>
-                              <div className="w-[17%] text-teal-950 pr-4 font-black uppercase tracking-wider select-none flex items-center justify-end h-9">Balance Due</div>
-                              <div className="w-[18%] text-right pr-4 font-mono font-black text-teal-950 text-[11.5px] border-l border-[#cbd5e1] flex items-center justify-end h-9">{formatCurrency(currentQuoteSubtotal - sheetDoc.details.downPayment)}</div>
-                            </div>
-                          </>
-                        ) : null}
+                        <div className="w-full flex text-[10px] border-l border-r border-b border-[#09090b] bg-teal-50/30" id="pdf-row-balancedue">
+                          <div className="w-[10%]"></div>
+                          <div className="w-[55%]"></div>
+                          <div className="w-[17%] text-teal-950 pr-4 font-black uppercase tracking-wider select-none flex items-center justify-end h-9">Balance Due</div>
+                          <div className="w-[18%] text-right pr-4 font-mono font-black text-teal-950 text-[11.5px] border-l border-[#cbd5e1] flex items-center justify-end h-9">{formatCurrency(currentQuoteSubtotal - sheetDoc.details.downPayment)}</div>
+                        </div>
                       </>
-                    )}
+                    ) : null}
                   </div>
-                </div>
+                )}
 
                 {/* ROW 30 & 31: Footer Spacers and Banking Info */}
                 {excelStyleMode === 'excel' && (
@@ -3673,9 +3669,7 @@ export default function App() {
                                     <div className="border-b-[1.5px] border-[#09090b]" style={{ height: isVeryCrowded ? '12px' : '20px' }}></div>
                                   </div>
                                 </div>
-                              </div>
-
-                              {/* Right Columns (col-span-5): Tax Rates, Grand Total & Thank you box */}
+                               {/* Right Columns (col-span-5): Tax Rates, Grand Total & Thank you box */}
                               <div className="col-span-5 flex flex-col justify-between pt-1">
                                 {/* Tax Rates */}
                                 <div className={`flex justify-end items-center gap-4 ${isVeryCrowded ? 'mb-2' : 'mb-3.5'}`}>
@@ -3688,7 +3682,9 @@ export default function App() {
                                     <div className="border-r border-[#a1a1aa] w-12 h-4 bg-zinc-100"></div>
                                     <div className="w-12 h-4 bg-zinc-100"></div>
                                   </div>
-                                   {/* GRAND TOTAL box filled with yellow bg and thick black border */}
+                                </div>
+
+                                {/* GRAND TOTAL box filled with yellow bg and thick black border */}
                                 <div className={`flex items-center justify-end gap-3 ${sheetDoc.details.downPayment && sheetDoc.details.downPayment > 0 ? 'mb-1.5' : isVeryCrowded ? 'mb-2.5' : 'mb-5'}`}>
                                   <span className="font-black text-[11.5px] text-zinc-950 uppercase tracking-widest leading-none">
                                     GRAND TOTAL:
@@ -3735,12 +3731,12 @@ export default function App() {
                                       </div>
                                     </div>
                                   </>
-                                ) : null}                               </div>
+                                ) : null}
 
                                 {/* Light cyan Thank you banner */}
                                 <div className={`w-full text-center bg-[#CCFFFA]/30 border-[1.5px] border-[#09090b] rounded-none font-sans font-black text-zinc-950 text-[12px] tracking-widest uppercase select-none shadow-3xs ${isVeryCrowded ? 'py-1.5' : 'py-3'}`}>
                                   Thank you.
-                                </div>
+                                </div>                               </div>
                               </div>
                             </div>
 
