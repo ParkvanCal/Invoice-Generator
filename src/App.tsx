@@ -3497,20 +3497,12 @@ export default function App() {
                       <div className="w-[18%] text-right pr-4 font-mono font-black text-[#09090b] text-[11px] border-l border-[#cbd5e1] flex items-center justify-end h-9">{formatCurrency(currentQuoteSubtotal)}</div>
                     </div>
                     {sheetDoc.details.downPayment && sheetDoc.details.downPayment > 0 ? (
-                      <>
-                        <div className="w-full flex text-[10px] border-l border-r border-b border-[#09090b] bg-emerald-50/20" id="pdf-row-downpayment">
-                          <div className="w-[10%]"></div>
-                          <div className="w-[55%]"></div>
-                          <div className="w-[17%] text-emerald-850 pr-4 font-bold uppercase tracking-wider select-none flex items-center justify-end h-8">Down Payment</div>
-                          <div className="w-[18%] text-right pr-4 font-mono text-zinc-700 text-[10.5px] border-l border-[#cbd5e1] flex items-center justify-end h-8">{formatCurrency(sheetDoc.details.downPayment)}</div>
-                        </div>
-                        <div className="w-full flex text-[10px] border-l border-r border-b border-[#09090b] bg-teal-50/30" id="pdf-row-balancedue">
-                          <div className="w-[10%]"></div>
-                          <div className="w-[55%]"></div>
-                          <div className="w-[17%] text-teal-950 pr-4 font-black uppercase tracking-wider select-none flex items-center justify-end h-9">Balance Due</div>
-                          <div className="w-[18%] text-right pr-4 font-mono font-black text-teal-950 text-[11.5px] border-l border-[#cbd5e1] flex items-center justify-end h-9">{formatCurrency(currentQuoteSubtotal - sheetDoc.details.downPayment)}</div>
-                        </div>
-                      </>
+                      <div className="w-full flex text-[10px] border-l border-r border-b border-[#09090b] bg-emerald-50/20" id="pdf-row-downpayment">
+                        <div className="w-[10%]"></div>
+                        <div className="w-[55%]"></div>
+                        <div className="w-[17%] text-emerald-850 pr-4 font-bold uppercase tracking-wider select-none flex items-center justify-end h-8">Down Payment</div>
+                        <div className="w-[18%] text-right pr-4 font-mono text-zinc-700 text-[10.5px] border-l border-[#cbd5e1] flex items-center justify-end h-8">{formatCurrency(sheetDoc.details.downPayment)}</div>
+                      </div>
                     ) : null}
                   </div>
                 )}
@@ -3570,9 +3562,15 @@ export default function App() {
                         <div className={`w-full flex text-right ${isVeryCrowded ? 'mt-1.5 mb-1' : isCrowded ? 'mt-3 mb-2' : 'mt-6 mb-4'}`}>
                           <div className="w-[10%]"></div>
                           <div className="w-[55%]"></div>
-                          <div className="w-[17%] text-right pr-4 font-black text-zinc-900 uppercase tracking-widest flex items-center justify-end text-[12px] select-none">TOTAL DUE</div>
+                          <div className="w-[17%] text-right pr-4 font-black text-zinc-900 uppercase tracking-widest flex items-center justify-end text-[12px] select-none">
+                            {sheetDoc.details.downPayment && sheetDoc.details.downPayment > 0 ? "BALANCE DUE" : "TOTAL DUE"}
+                          </div>
                           <div className="w-[18%] text-right pr-2 font-mono text-2xl font-black text-zinc-955 underline decoration-double select-all" id="cell-j32">
-                            {formatCurrency(grandTotalResult)}
+                            {formatCurrency(
+                              sheetDoc.details.downPayment && sheetDoc.details.downPayment > 0 
+                                ? (grandTotalResult - sheetDoc.details.downPayment) 
+                                : grandTotalResult
+                            )}
                           </div>
                         </div>
                       )}
@@ -3683,55 +3681,6 @@ export default function App() {
                                     <div className="w-12 h-4 bg-zinc-100"></div>
                                   </div>
                                 </div>
-
-                                {/* GRAND TOTAL box filled with yellow bg and thick black border */}
-                                <div className={`flex items-center justify-end gap-3 ${sheetDoc.details.downPayment && sheetDoc.details.downPayment > 0 ? 'mb-1.5' : isVeryCrowded ? 'mb-2.5' : 'mb-5'}`}>
-                                  <span className="font-black text-[11.5px] text-zinc-950 uppercase tracking-widest leading-none">
-                                    GRAND TOTAL:
-                                  </span>
-                                  <div className="border-[2px] border-[#09090b] bg-[#FEF9C3] px-3.5 py-1.5 flex items-center justify-between shadow-3xs" style={{ minWidth: '135px' }}>
-                                    <span className="font-black text-[12px] text-zinc-950">
-                                      {activeCurrency}
-                                    </span>
-                                    <span className="font-black font-mono text-[12.5px] text-zinc-955 text-right">
-                                      {grandTotalResult.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                    </span>
-                                  </div>
-                                </div>
-
-                                {sheetDoc.details.downPayment && sheetDoc.details.downPayment > 0 ? (
-                                  <>
-                                    {/* Down Payment Box */}
-                                    <div className={`flex items-center justify-end gap-3 ${isVeryCrowded ? 'mb-1.5' : 'mb-2'}`}>
-                                      <span className="font-black text-[10.5px] text-zinc-650 uppercase tracking-wider leading-none">
-                                        DOWN PAYMENT:
-                                      </span>
-                                      <div className="border border-[#09090b] bg-emerald-50/40 px-3.5 py-1 flex items-center justify-between shadow-3xs" style={{ minWidth: '135px' }}>
-                                        <span className="font-bold text-[11px] text-zinc-650">
-                                          {activeCurrency}
-                                        </span>
-                                        <span className="font-bold font-mono text-[11.5px] text-zinc-700 text-right">
-                                          {sheetDoc.details.downPayment.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                        </span>
-                                      </div>
-                                    </div>
-
-                                    {/* Balance Box */}
-                                    <div className={`flex items-center justify-end gap-3 ${isVeryCrowded ? 'mb-2.5' : 'mb-5'}`}>
-                                      <span className="font-black text-[11.5px] text-zinc-955 uppercase tracking-widest leading-none">
-                                        BALANCE DUE:
-                                      </span>
-                                      <div className="border-[2px] border-[#09090b] bg-teal-50 px-3.5 py-1.5 flex items-center justify-between shadow-3xs" style={{ minWidth: '135px' }}>
-                                        <span className="font-black text-[12px] text-teal-955">
-                                          {activeCurrency}
-                                        </span>
-                                        <span className="font-black font-mono text-[12.5px] text-teal-955 text-right">
-                                          {(grandTotalResult - sheetDoc.details.downPayment).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  </>
-                                ) : null}
 
                                 {/* Light cyan Thank you banner */}
                                 <div className={`w-full text-center bg-[#CCFFFA]/30 border-[1.5px] border-[#09090b] rounded-none font-sans font-black text-zinc-950 text-[12px] tracking-widest uppercase select-none shadow-3xs ${isVeryCrowded ? 'py-1.5' : 'py-3'}`}>
