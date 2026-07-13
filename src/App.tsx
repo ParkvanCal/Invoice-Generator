@@ -3742,7 +3742,7 @@ export default function App() {
                     <div className={`w-full h-[3.5px] bg-[#0A2E5C] select-none transition-all duration-300 ${pageBorderLineMtClass}`}></div>
 
                     {/* Footer Contact Slogans Row */}
-                    <div className="w-full flex flex-row flex-nowrap justify-between items-center text-[9px] sm:text-[10px] font-sans font-semibold select-none text-zinc-650 gap-2 whitespace-nowrap overflow-hidden">
+                    <div className="w-full flex flex-row flex-nowrap justify-between items-center text-[9px] sm:text-[10px] font-sans font-semibold select-none text-zinc-650 gap-2 whitespace-nowrap pt-2.5 pb-1">
                       <span className="text-[#E65100] font-black uppercase tracking-wider text-[9.5px] sm:text-[10.5px] shrink-0 whitespace-nowrap">
                         {brCompanyFooterTagline}
                       </span>
