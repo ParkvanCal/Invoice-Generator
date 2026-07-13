@@ -864,12 +864,20 @@ export default function App() {
       const pdfWidth = 210;
       const pdfHeight = 297;
       
-      const imgWidth = pdfWidth;
-      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+      let imgWidth = pdfWidth;
+      let imgHeight = (canvas.height * pdfWidth) / canvas.width;
       
+      // Scale down image proportionally if it exceeds A4 page height to fit on a single page!
+      if (imgHeight > pdfHeight) {
+        const scaleFactor = pdfHeight / imgHeight;
+        imgHeight = pdfHeight;
+        imgWidth = imgWidth * scaleFactor;
+      }
+      
+      const xOffset = imgWidth < pdfWidth ? (pdfWidth - imgWidth) / 2 : 0;
       const yOffset = imgHeight < pdfHeight ? (pdfHeight - imgHeight) / 2 : 0;
       
-      pdf.addImage(imgData, 'PNG', 0, yOffset > 0 ? yOffset : 0, imgWidth, imgHeight);
+      pdf.addImage(imgData, 'PNG', xOffset > 0 ? xOffset : 0, yOffset > 0 ? yOffset : 0, imgWidth, imgHeight);
       
       const cleanClient = (sheetDoc.details.clientName || 'CLIENT')
         .replace(/[^a-zA-Z0-9\s]/g, '')
