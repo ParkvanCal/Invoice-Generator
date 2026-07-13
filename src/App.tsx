@@ -3742,16 +3742,16 @@ export default function App() {
                     <div className={`w-full h-[3.5px] bg-[#0A2E5C] select-none transition-all duration-300 ${pageBorderLineMtClass}`}></div>
 
                     {/* Footer Contact Slogans Row */}
-                    <div className="w-full flex justify-between items-center text-[10px] font-sans font-semibold select-none text-zinc-650">
-                      <span className="text-[#E65100] font-black uppercase tracking-wider text-[10.5px]">
+                    <div className="w-full flex flex-row flex-nowrap justify-between items-center text-[9px] sm:text-[10px] font-sans font-semibold select-none text-zinc-650 gap-2 whitespace-nowrap overflow-hidden">
+                      <span className="text-[#E65100] font-black uppercase tracking-wider text-[9.5px] sm:text-[10.5px] shrink-0 whitespace-nowrap">
                         {brCompanyFooterTagline}
                       </span>
                       
-                      <span className="font-mono font-bold select-text">
+                      <span className="font-mono font-bold select-text shrink-0 whitespace-nowrap">
                         {brCompanyEmail || 'sales@parkvancalibration.co.zw'}
                       </span>
 
-                      <div className="flex items-center gap-4 font-mono font-bold">
+                      <div className="flex items-center gap-2 sm:gap-4 font-mono font-bold shrink-0 whitespace-nowrap">
                         <span className="select-text">{brCompanyPhone || '+263 77 241 3600'}</span>
                         <span className="text-zinc-400 font-bold">Page 1 of 1</span>
                       </div>
